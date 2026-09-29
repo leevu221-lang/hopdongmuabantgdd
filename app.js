@@ -392,11 +392,11 @@ function loadTruongSonHdmbPreset(showToastAlert = false) {
   renderHdmbContract();
 
   if (showToastAlert) {
-    showToast('Đã nạp mẫu Hợp đồng Mua bán Chi nhánh Tổng CT Trường Sơn (4 trang)!');
+    showToast('Đã nạp mẫu Hợp đồng Mua bán Chi nhánh Tổng CT Trường Sơn (3 trang chuẩn)!');
   }
 }
 
-// Render dữ liệu động lên toàn bộ 4 trang HĐMB (Mẫu 3)
+// Render dữ liệu động lên toàn bộ 3 trang HĐMB (Mẫu 3)
 function renderHdmbContract() {
   const container = document.getElementById('a4-pages-hdmb');
   if (!container) return;
