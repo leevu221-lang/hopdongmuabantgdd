@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phần Mềm Quản Lý & In Ấn Hợp Đồng - Biên Bản Nghiệm Thu A4</title>
+  <meta name="description" content="Hệ thống nhập liệu và in ấn Hợp đồng mua bán, Biên bản nghiệm thu giao nhận hàng hóa, Biên bản thanh lý chuẩn khổ A4 - Điện Máy Xanh & Thế Giới Di Động.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- HEADER THANH ĐIỀU HƯỚNG TONE XANH PASTEL -->
+  <header class="app-header no-print">
+    <div class="header-brand">
+      <div class="brand-logo-badge">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>InHopDong <span class="tag-pastel">A4 Pro</span></h1>
+        <p class="tagline">Hệ thống tạo & in Biên Bản Nghiệm Thu - Thanh Lý - Hợp Đồng</p>
+      </div>
+    </div>
+
+    <!-- TABS CHÍNH -->
+    <nav class="header-nav">
+      <button class="nav-tab active" id="tab-btn-editor" onclick="switchMainTab('editor')">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        <span>Nhập Liệu Văn Bản</span>
+      </button>
+      <button class="nav-tab" id="tab-btn-template" onclick="switchMainTab('template')">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+        <span>Tải / Thay Đổi Mẫu</span>
+      </button>
+      <button class="nav-tab" id="tab-btn-github" onclick="switchMainTab('github')">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+        <span>Đẩy Lên GitHub</span>
+      </button>
+    </nav>
+
+    <!-- HÀNH ĐỘNG NHANH -->
+    <div class="header-actions">
+      <button class="btn btn-secondary" onclick="loadSampleData()" title="Khôi phục dữ liệu mẫu từ hóa đơn gốc">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+        Dữ Liệu Mẫu
+      </button>
+      <button class="btn btn-secondary" onclick="toggleDirectEdit()" id="btn-toggle-edit" title="Bật/Tắt chỉnh sửa chữ trực tiếp trên mặt giấy in">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+        <span id="txt-toggle-edit">Sửa Trực Tiếp: Tắt</span>
+      </button>
+      <button class="btn btn-primary" onclick="printDocument()" id="btn-print-top">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        <strong>In Khổ A4 / Lưu PDF</strong>
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTAINER CHÍNH -->
+  <main class="app-main">
+    
+    <!-- ==================== TAB 1: NHẬP LIỆU & XEM TRƯỚC ==================== -->
+    <section class="tab-pane active" id="pane-editor">
+      <div class="workspace-grid">
+        
+        <!-- CỘT TRÁI: FORM NHẬP LIỆU -->
+        <aside class="sidebar-form no-print">
+          <div class="sidebar-inner">
+
+            <!-- THANH CHỌN NHANH LOẠI VĂN BẢN -->
+            <div class="form-section highlight-box">
+              <label class="section-label">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                Loại Mẫu Văn Bản Muốn In
+              </label>
+              <div class="template-selector-cards">
+                <button type="button" class="tpl-btn active" data-type="bbnt" onclick="selectDocumentType('bbnt')">
+                  <span class="tpl-badge">Mẫu 1</span>
+                  <strong>Biên Bản Nghiệm Thu & Giao Nhận</strong>
+                  <small>Kèm bảng chi tiết hàng hóa, ảnh sản phẩm</small>
+                </button>
+                <button type="button" class="tpl-btn" data-type="bbtl" onclick="selectDocumentType('bbtl')">
+                  <span class="tpl-badge">Mẫu 2</span>
+                  <strong>Biên Bản Thanh Lý Hợp Đồng</strong>
+                  <small>Điều 1 nội dung, Điều 2 giá trị thanh lý</small>
+                </button>
+                <button type="button" class="tpl-btn" data-type="hdmb" onclick="selectDocumentType('hdmb')">
+                  <span class="tpl-badge">Mẫu 3</span>
+                  <strong>Hợp Đồng Mua Bán Hàng Hóa</strong>
+                  <small>Các điều khoản kinh tế, bảo hành, cam kết</small>
+                </button>
+                <button type="button" class="tpl-btn" data-type="pxk" onclick="selectDocumentType('pxk')">
+                  <span class="tpl-badge">Mẫu 4</span>
+                  <strong>Hóa Đơn / Phiếu Giao Hàng</strong>
+                  <small>Phiếu xuất kho kiêm vận chuyển giao hàng</small>
+                </button>
+              </div>
+            </div>
+
+            <!-- THÔNG TIN CHUNG VĂN BẢN -->
+            <div class="form-section card-pastel">
+              <h2 class="card-title">
+                <span class="step-num">1</span>
+                Thông Tin Văn Bản & Số Hiệu
+              </h2>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="doc-number">Số Biên Bản / Hóa Đơn</label>
+                  <input type="text" id="doc-number" value="-2026/KD-TGDD/BBNT" oninput="updateDocumentPreview()">
+                </div>
+                <div class="form-group">
+                  <label for="contract-number">Căn Cứ Hợp Đồng Số</label>
+                  <input type="text" id="contract-number" value="-2026 /KD-TGDD/HĐMB" oninput="updateDocumentPreview()">
+                </div>
+              </div>
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label for="doc-day">Ngày</label>
+                  <input type="number" id="doc-day" min="1" max="31" value="29" oninput="updateDocumentPreview()">
+                </div>
+                <div class="form-group">
+                  <label for="doc-month">Tháng</label>
+                  <input type="number" id="doc-month" min="1" max="12" value="09" oninput="updateDocumentPreview()">
+                </div>
+                <div class="form-group">
+                  <label for="doc-year">Năm</label>
+                  <input type="number" id="doc-year" min="2020" max="2099" value="2026" oninput="updateDocumentPreview()">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="doc-basis-extra">Căn Cứ Khác (Tùy chọn)</label>
+                <input type="text" id="doc-basis-extra" value="Căn cứ việc giao nhận hàng hóa, sản phẩm hoàn thành." oninput="updateDocumentPreview()">
+              </div>
+            </div>
+
+            <!-- THÔNG TIN BÊN A (BÊN MUA) -->
+            <div class="form-section card-pastel">
+              <div class="card-title-row">
+                <h2 class="card-title">
+                  <span class="step-num">2</span>
+                  Bên Mua (Bên A)
+                </h2>
+                <div class="btn-group-sm">
+                  <button type="button" class="btn-chip" onclick="saveCustomerPreset()" title="Lưu thông tin Bên A này vào danh bạ">
+                    + Lưu mẫu Bên A
+                  </button>
+                  <select id="select-customer-preset" onchange="applyCustomerPreset(this.value)" class="chip-select">
+                    <option value="">-- Mẫu đã lưu --</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="party-a-name">Tên Công Ty / Cá Nhân Bên A *</label>
+                <input type="text" id="party-a-name" value="CÔNG TY CỔ PHẦN THƯƠNG MẠI VÀ DỊCH VỤ HOÀNG THUỘC" oninput="updateDocumentPreview()">
+              </div>
+              <div class="form-group">
+                <label for="party-a-address">Trụ Sở Đăng Ký / Địa Chỉ</label>
+                <input type="text" id="party-a-address" value="672/12 Mậu Thân, Phường Cái Khế, TP Cần Thơ, Việt Nam" oninput="updateDocumentPreview()">
+              </div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="party-a-tax">Mã Số Thuế (MST)</label>
+                  <input type="text" id="party-a-tax" value="1801823649" oninput="updateDocumentPreview()">
+                </div>
+                <div class="form-group">
+                  <label for="party-a-phone">Điện Thoại – Fax</label>
+                  <input type="text" id="party-a-phone" placeholder="Để trống hoặc điền SĐT" oninput="updateDocumentPreview()">
+                </div>
+              </div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="party-a-bank-account">Số Tài Khoản Ngân Hàng</label>
+                  <input type="text" id="party-a-bank-account" placeholder="Ví dụ: 19035..." oninput="updateDocumentPreview()">
+                </div>
+                <div class="form-group">
+                  <label for="party-a-bank-name">Tại Ngân Hàng</label>
+                  <input type="text" id="party-a-bank-name" placeholder="Ví dụ: Vietcombank CN Cần Thơ" oninput="updateDocumentPreview()">
+                </div>
+              </div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="party-a-rep">Đại Diện Bởi</label>
+                  <input type="text" id="party-a-rep" value="Ông TRẦN VĂN THUỘC" oninput="updateDocumentPreview()">
+                </div>
+                <div class="form-group">
+                  <label for="party-a-position">Chức Vụ</label>
+                  <input type="text" id="party-a-position" value="GIÁM ĐỐC" oninput="updateDocumentPreview()">
+                </div>
+              </div>
+            </div>
+
+            <!-- THÔNG TIN BÊN B (BÊN BÁN) -->
+            <div class="form-section card-pastel">
+              <div class="card-title-row">
+                <h2 class="card-title">
+                  <span class="step-num">3</span>
+                  Bên Bán (Bên B)
+                </h2>
+                <span class="badge-tag">Điện Máy Xanh / Tùy Biến</span>
+              </div>
+
+              <div class="form-group">
+                <label for="party-b-name">Tên Đơn Vị Bán Hàng (Bên B) *</label>
+                <input type="text" id="party-b-name" value="CHI NHÁNH CÔNG TY CỔ PHẦN ĐẦU TƯ ĐIỆN MÁY XANH" oninput="updateDocumentPreview()">
+              </div>
+              <div class="form-group">
+                <label for="party-b-address">Trụ Sở Đăng Ký</label>
+                <input type="text" id="party-b-address" value="Số 2A, Đường Trần Hưng Đạo, Khóm 6, Phường Tân Thành, Tỉnh Cà Mau, Việt Nam." oninput="updateDocumentPreview()">
+              </div>
+              <div class="form-group">
+                <label for="party-b-store">Siêu Thị Bán Hàng</label>
+                <input type="text" id="party-b-store" value="ĐML_CMA_CMA - 155A NGUYỄN TẤT THÀNH" oninput="updateDocumentPreview()">
+              </div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="party-b-tax">Mã Số Thuế</label>
+                  <input type="text" id="party-b-tax" value="0303217354-006" oninput="updateDocumentPreview()">
+                </div>
+                <div class="form-group">
+                  <label for="party-b-phone">Điện Thoại – Hotline</label>
+                  <input type="text" id="party-b-phone" value="1800 1060 – (+84) 8 38125957" oninput="updateDocumentPreview()">
+                </div>
+              </div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="party-b-rep">Đại Diện Bởi</label>
+                  <input type="text" id="party-b-rep" value="Lê Thụy Sơn Ca" oninput="updateDocumentPreview()">
+                </div>
+                <div class="form-group">
+                  <label for="party-b-position">Chức Vụ</label>
+                  <input type="text" id="party-b-position" value="Giám Đốc Vùng (RSM)" oninput="updateDocumentPreview()">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="party-b-auth">Giấy Ủy Quyền (Nếu có)</label>
+                <input type="text" id="party-b-auth" value="Theo giấy ủy quyền số 50/2025/ĐMX/UQ ký ngày 4/12/2025" oninput="updateDocumentPreview()">
+              </div>
+            </div>
+
+            <!-- BẢNG DANH MỤC HÀNG HÓA -->
+            <div class="form-section card-pastel">
+              <div class="card-title-row">
+                <h2 class="card-title">
+                  <span class="step-num">4</span>
+                  Danh Mục Hàng Hóa / Dịch Vụ
+                </h2>
+                <button type="button" class="btn btn-sm btn-primary" onclick="addProductRow()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="6" y1="12" x2="18" y2="12"></line></svg>
+                  Thêm Dòng Hàng
+                </button>
+              </div>
+
+              <!-- TÙY CHỌN BẢNG -->
+              <div class="table-options-bar">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="opt-show-product-img" checked onchange="toggleProductImgColumn()">
+                  <span>Hiển thị cột hình ảnh sản phẩm</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="opt-show-unit-col" onchange="toggleUnitColumn()">
+                  <span>Thêm cột Đơn vị tính (ĐVT)</span>
+                </label>
+              </div>
+
+              <!-- DANH SÁCH SẢN PHẨM TRONG FORM -->
+              <div id="product-items-list" class="product-inputs-container">
+                <!-- Javascript sẽ render động các dòng hàng ở đây -->
+              </div>
+
+              <!-- TỔNG TIỀN VÀ BẰNG CHỮ -->
+              <div class="summary-box">
+                <div class="summary-row">
+                  <span>Tổng Giá Trị Thanh Toán:</span>
+                  <strong id="display-total-amount" class="text-mint">7.990.000 VNĐ</strong>
+                </div>
+                <div class="amount-in-words-box">
+                  <span class="label-words">Bằng chữ:</span>
+                  <span id="display-total-in-words" class="val-words">Bảy triệu chín trăm chín mươi ngàn đồng chẵn.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ĐIỀU KHOẢN & LỜI KẾT VĂN BẢN -->
+            <div class="form-section card-pastel">
+              <h2 class="card-title">
+                <span class="step-num">5</span>
+                Lời Kết & Điều Khoản Văn Bản
+              </h2>
+              <div class="form-group">
+                <label for="closing-note-1">Cam Kết & Xác Nhận</label>
+                <textarea id="closing-note-1" rows="2" oninput="updateDocumentPreview()">Hai bên xác nhận số hàng hóa, sản phẩm trên đã được giao nhận đầy đủ và đúng theo yêu cầu và sẽ lập biên bản thanh lý hợp đồng này sau khi biên bản giao nhận được lập.</textarea>
+              </div>
+              <div class="form-group">
+                <label for="closing-note-2">Số Lượng Bản Lưu</label>
+                <input type="text" id="closing-note-2" value="Biên bản được làm thành 2 bản, có giá trị như nhau. Mỗi bên giữ 1 bản." oninput="updateDocumentPreview()">
+              </div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="sign-title-a">Tiêu Đề Ký Bên A</label>
+                  <input type="text" id="sign-title-a" value="ĐẠI DIỆN BÊN A" oninput="updateDocumentPreview()">
+                </div>
+                <div class="form-group">
+                  <label for="sign-title-b">Tiêu Đề Ký Bên B</label>
+                  <input type="text" id="sign-title-b" value="ĐẠI DIỆN BÊN B" oninput="updateDocumentPreview()">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="footer-text">Nội Dung Chân Trang (Footer)</label>
+                <input type="text" id="footer-text" value="Thegioididong.com và dienmayxanh.com" oninput="updateDocumentPreview()">
+              </div>
+            </div>
+
+          </div>
+        </aside>
+
+        <!-- CỘT PHẢI: TRÌNH XEM TRƯỚC BẢN IN KHỔ A4 (A4 CANVAS LIVE PREVIEW) -->
+        <main class="preview-area">
+          <div class="preview-control-bar no-print">
+            <div class="zoom-controls">
+              <span class="ctrl-label">Thu phóng A4:</span>
+              <button class="btn-icon" onclick="setZoom(0.7)" title="70%">70%</button>
+              <button class="btn-icon" onclick="setZoom(0.85)" title="85%">85%</button>
+              <button class="btn-icon active" id="btn-zoom-100" onclick="setZoom(1.0)" title="100% chuẩn A4">100%</button>
+              <button class="btn-icon" onclick="setZoom('auto')" title="Tự động vừa màn hình">Vừa Khung</button>
+            </div>
+            
+            <div class="preview-mode-tags">
+              <span class="preview-status-pill">
+                <span class="dot-online"></span>
+                Xem Trước Khổ A4 (210 × 297 mm)
+              </span>
+              <button class="btn-print-floating" onclick="printDocument()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                In Bản Này (Ctrl + P)
+              </button>
+            </div>
+          </div>
+
+          <!-- KHUNG GIẤY IN A4 THỰC TẾ -->
+          <div class="a4-stage" id="a4-stage">
+            
+            <!-- TRANG 1 -->
+            <article class="a4-page" id="a4-page-1">
+              
+              <!-- PHÔI ẢNH MẪU HÓA ĐƠN NỀN (NẾU NGƯỜI DÙNG TẢI LÊN MẪU) -->
+              <div class="template-bg-overlay" id="template-bg-overlay-1"></div>
+
+              <!-- NỘI DUNG VĂN BẢN CHUẨN A4 -->
+              <div class="page-content">
+                
+                <!-- HEADER QUỐC HIỆU TIÊU NGỮ -->
+                <div class="doc-national-header">
+                  <p class="national-name">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+                  <p class="national-motto">Độc lập – Tự do – Hạnh Phúc</p>
+                  <div class="national-divider"></div>
+                </div>
+
+                <!-- TIÊU ĐỀ VĂN BẢN VÀ SỐ HIỆU -->
+                <div class="doc-title-block">
+                  <h2 class="doc-main-title" id="pv-doc-title">BIÊN BẢN NGHIỆM THU, GIAO NHẬN HÀNG HÓA</h2>
+                  <p class="doc-code">Số: <span id="pv-doc-number">-2026/KD-TGDD/BBNT</span></p>
+                  <div class="doc-legal-basis">
+                    <p>Căn cứ Hợp đồng số <span id="pv-contract-number">-2026 /KD-TGDD/HĐMB</span></p>
+                    <p id="pv-basis-extra">- Căn cứ việc giao nhận hàng hóa, sản phẩm hoàn thành.</p>
+                  </div>
+                </div>
+
+                <!-- PHẦN THÔNG TIN BÊN MUA & BÊN BÁN -->
+                <div class="parties-block">
+                  
+                  <!-- BÊN A (BÊN MUA) -->
+                  <div class="party-info">
+                    <h3 class="party-title"><span class="underline">BÊN MUA (BÊN A):</span> <span id="pv-party-a-name">CÔNG TY CỔ PHẦN THƯƠNG MẠI VÀ DỊCH VỤ HOÀNG THUỘC</span></h3>
+                    <table class="party-table">
+                      <tr>
+                        <td class="col-lbl">Trụ sở đăng ký</td>
+                        <td class="col-colon">:</td>
+                        <td class="col-val" id="pv-party-a-address">672/12 Mậu Thân, Phường Cái Khế, TP Cần Thơ, Việt Nam</td>
+                      </tr>
+                      <tr>
+                        <td class="col-lbl">Mã số thuế</td>
+                        <td class="col-colon">:</td>
+                        <td class="col-val" id="pv-party-a-tax">1801823649</td>
+                      </tr>
+                      <tr>
+                        <td class="col-lbl">Điện thoại – Fax</td>
+                        <td class="col-colon">:</td>
+                        <td class="col-val underline-dotted" id="pv-party-a-phone"></td>
+                      </tr>
+                      <tr>
+                        <td class="col-lbl">Số tài khoản</td>
+                        <td class="col-colon">:</td>
+                        <td class="col-val underline-dotted" id="pv-party-a-bank-account"></td>
+                      </tr>
+                      <tr>
+                        <td class="col-lbl">Tại ngân hàng</td>
+                        <td class="col-colon">:</td>
+                        <td class="col-val underline-dotted" id="pv-party-a-bank-name"></td>
+                      </tr>
+                      <tr>
+                        <td class="col-lbl">Đại diện bởi</td>
+                        <td class="col-colon">:</td>
+                        <td class="col-val bold" id="pv-party-a-rep">Ông TRẦN VĂN THUỘC</td>
+                      </tr>
+                      <tr>
+                        <td class="col-lbl">Chức vụ</td>
+                        <td class="col-colon">:</td>
+                        <td class="col-val bold" id="pv-party-a-position">GIÁM ĐỐC</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <!-- BÊN B (BÊN BÁN) -->
+                  <div class="party-info">
+                    <h3 class="party-title"><span class="underline">BÊN BÁN (BÊN B):</span> <span id="pv-party-b-name">CHI NHÁNH CÔNG TY CỔ PHẦN ĐẦU TƯ ĐIỆN MÁY XANH</span></h3>
+                    <table class="party-table">
+                      <tr>
+                        <td class="col-lbl">Trụ sở đăng ký</td>
+                        <td class="col-colon">:</td>
+                        <td class="col-val" id="pv-party-b-address">Số 2A, Đường Trần Hưng Đạo, Khóm 6, Phường Tân Thành, Tỉnh Cà Mau, Việt Nam.</td>
+                      </tr>
+                      <tr id="pv-row-store">
+                        <td class="col-lbl">Siêu thị bán hàng</td>
+                        <td class="col-colon">:</td>
+                        <td class="col-val bold" id="pv-party-b-store">ĐML_CMA_CMA - 155A NGUYỄN TẤT THÀNH</td>
+                      </tr>
+                      <tr>
+                        <td class="col-lbl">Mã số thuế</td>
+                        <td class="col-colon">:</td>
+                        <td class="col-val" id="pv-party-b-tax">0303217354-006</td>
+                      </tr>
+                      <tr>
+                        <td class="col-lbl">Điện thoại – Fax</td>
+                        <td class="col-colon">:</td>
+                        <td class="col-val" id="pv-party-b-phone">1800 1060 – (+84) 8 38125957</td>
+                      </tr>
+                      <tr>
+                        <td class="col-lbl">Đại diện bởi</td>
+                        <td class="col-colon">:</td>
+                        <td class="col-val bold" id="pv-party-b-rep">Lê Thụy Sơn Ca</td>
+                      </tr>
+                      <tr>
+                        <td class="col-lbl">Chức vụ</td>
+                        <td class="col-colon">:</td>
+                        <td class="col-val bold" id="pv-party-b-position">Giám Đốc Vùng (RSM)</td>
+                      </tr>
+                      <tr id="pv-row-auth">
+                        <td class="col-lbl"></td>
+                        <td class="col-colon"></td>
+                        <td class="col-val italic" id="pv-party-b-auth">Theo giấy ủy quyền số 50/2025/ĐMX/UQ ký ngày 4/12/2025</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- LỜI MỞ ĐẦU BÀN GIAO HOẶC THANH LÝ -->
+                <div class="lead-in-text">
+                  <p class="italic date-lead">
+                    Hôm nay, ngày <span id="pv-day">29</span> tháng <span id="pv-month">09</span> năm <span id="pv-year">2026</span>
+                  </p>
+                  <p id="pv-lead-action">Tiến hành bàn giao hàng hóa, sản phẩm/Dịch vụ như sau: Bên B giao cho bên A:</p>
+                </div>
+
+                <!-- KHU VỰC THAY ĐỔI THEO TỪNG MẪU: BẢNG HÀNG HÓA HOẶC NỘI DUNG THANH LÝ -->
+                <div id="dynamic-template-body">
+                  <!-- MẪU BBNT: BẢNG HÀNG HÓA -->
+                  <div id="body-section-bbnt">
+                    <table class="print-items-table" id="pv-goods-table">
+                      <thead>
+                        <tr>
+                          <th class="col-th-img" id="th-img">Hình ảnh</th>
+                          <th class="col-th-desc">Mô tả hàng hoá</th>
+                          <th class="col-th-unit" id="th-unit" style="display:none;">ĐVT</th>
+                          <th class="col-th-qty">SL</th>
+                          <th class="col-th-price">Giá bán lẻ</th>
+                          <th class="col-th-total">Thành tiền</th>
+                        </tr>
+                      </thead>
+                      <tbody id="pv-goods-tbody">
+                        <!-- Sẽ tự động render -->
+                      </tbody>
+                      <tfoot>
+                        <tr class="tfoot-total-row">
+                          <td colspan="4" class="text-right bold" id="td-total-label">TỔNG CỘNG</td>
+                          <td class="text-right bold nowrap" id="pv-table-grand-total">7.990.000 vnd</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+
+                    <div class="total-in-words-row">
+                      <span class="underline-bold-red">Tổng giá bằng chữ:</span>
+                      <strong class="words-val underline-bold-red" id="pv-words-text">Bảy triệu chín trăm chín mươi ngàn đồng chẵn.</strong>
+                    </div>
+                  </div>
+
+                  <!-- MẪU BBTL: ĐIỀU 1, ĐIỀU 2 THANH LÝ -->
+                  <div id="body-section-bbtl" style="display: none;">
+                    <div class="liquidation-clauses">
+                      <p class="clause-lead">Hai bên thống nhất thỏa thuận nội dung thanh lý hợp đồng như sau:</p>
+                      <div class="clause-item">
+                        <strong class="clause-title">Điều 1: Nội dung giao dịch</strong>
+                        <p class="clause-sub">1.1............................................................................................................................................................... Bên A đã nhận đủ số lượng hàng hóa, sản phẩm/dịch vụ theo hợp đồng đã ký</p>
+                        <p class="clause-sub">1.2............................................................................................................................................................... Chất lượng và Quy cách hàng hóa, sản phẩm: đảm bảo đạt yêu cầu</p>
+                        <p class="clause-sub">1.3............................................................................................................................................................... Bên A đã nhận hóa đơn do bên B xuất theo quy định</p>
+                      </div>
+                      <div class="clause-item">
+                        <strong class="clause-title">Điều 2: Giá trị thanh lý:</strong>
+                        <p class="clause-sub">Tổng giá trị thanh lý: <strong id="pv-bbtl-total">7.990.000</strong> đồng. Tiền Bằng chữ: <strong class="underline-bold-red" id="pv-bbtl-words">Bảy triệu chín trăm chín mươi ngàn đồng chẵn.</strong></p>
+                        <p class="clause-sub">2.1...................................................................................................................................................................... Thời gian thanh toán: <span id="pv-payment-time">Trước khi bên B giao hàng</span></p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- MẪU HỢP ĐỒNG MUA BÁN KINH TẾ (HDMB) -->
+                  <div id="body-section-hdmb" style="display: none;">
+                    <div class="contract-clauses">
+                      <p class="clause-lead">Sau khi bàn bạc và thảo luận, hai bên đồng ý ký kết Hợp đồng mua bán với các điều khoản sau:</p>
+                      <div class="clause-item">
+                        <strong class="clause-title">Điều 1: Đối tượng hợp đồng & Bảng giá</strong>
+                        <div id="pv-hdmb-table-placeholder"></div>
+                      </div>
+                      <div class="clause-item">
+                        <strong class="clause-title">Điều 2: Phương thức thanh toán & Thời gian giao nhận</strong>
+                        <p>2.1. Thanh toán toàn bộ 100% giá trị hợp đồng bằng tiền mặt hoặc chuyển khoản trước khi giao hàng.</p>
+                        <p>2.2. Bên B chịu trách nhiệm giao hàng, lắp đặt và hướng dẫn sử dụng tại địa chỉ do Bên A chỉ định.</p>
+                      </div>
+                      <div class="clause-item">
+                        <strong class="clause-title">Điều 3: Cam kết chung & Hiệu lực hợp đồng</strong>
+                        <p>3.1. Hợp đồng có hiệu lực kể từ ngày ký. Mọi sửa đổi phải được lập thành văn bản phụ lục có chữ ký hai bên.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- LỜI KẾT VĂN BẢN VÀ CHỮ KÝ -->
+                <div class="doc-closing-block">
+                  <p id="pv-closing-note-1" class="closing-p">Hai bên xác nhận số hàng hóa, sản phẩm trên đã được giao nhận đầy đủ và đúng theo yêu cầu và sẽ lập biên bản thanh lý hợp đồng này sau khi biên bản giao nhận được lập.</p>
+                  <p id="pv-closing-note-2" class="closing-p">Biên bản được làm thành 2 bản, có giá trị như nhau. Mỗi bên giữ 1 bản.</p>
+                </div>
+
+                <!-- KHU VỰC CHỮ KÝ 2 BÊN -->
+                <div class="signatures-block">
+                  <div class="sig-column">
+                    <h4 class="sig-title" id="pv-sign-title-a">ĐẠI DIỆN BÊN A</h4>
+                    <p class="sig-sub">(Ký, ghi rõ họ tên & đóng dấu)</p>
+                    <div class="sig-space"></div>
+                    <p class="sig-name" id="pv-sign-name-a">TRẦN VĂN THUỘC</p>
+                  </div>
+                  <div class="sig-column">
+                    <h4 class="sig-title" id="pv-sign-title-b">ĐẠI DIỆN BÊN B</h4>
+                    <p class="sig-sub">(Ký, ghi rõ họ tên & đóng dấu)</p>
+                    <div class="sig-space"></div>
+                    <p class="sig-name" id="pv-sign-name-b">Lê Thụy Sơn Ca</p>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- CHÂN TRANG FOOTER A4 -->
+              <footer class="a4-footer">
+                <div class="footer-left" id="pv-footer-text">Thegioididong.com và dienmayxanh.com</div>
+                <div class="footer-right">1/1</div>
+              </footer>
+            </article>
+
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: TẢI / THAY ĐỔI MẪU HÓA ĐƠN ==================== -->
+    <section class="tab-pane" id="pane-template">
+      <div class="template-manager-container">
+        <div class="template-manager-header">
+          <div class="icon-circle-mint">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          </div>
+          <div>
+            <h2 class="section-title">Trung Tâm Tải Lên & Tùy Biến Mẫu Hóa Đơn / Hợp Đồng</h2>
+            <p class="section-desc">Thay đổi mẫu in, tải lên phôi hóa đơn nền hoặc logo công ty của riêng bạn để in ấn chuẩn xác theo từng doanh nghiệp.</p>
+          </div>
+        </div>
+
+        <div class="template-grid">
+          
+          <!-- THẺ 1: TẢI LÊN PHÔI MẪU NỀN (BACKGROUND TEMPLATE) -->
+          <div class="tpl-card">
+            <div class="tpl-card-head">
+              <h3>1. Tải Lên Ảnh Phôi Hóa Đơn Có Sẵn</h3>
+              <span class="badge-mint">In đè lên phôi</span>
+            </div>
+            <p class="card-hint">Nếu công ty bạn đã có phôi giấy in hóa đơn/hợp đồng in màu sẵn từ trước, hãy tải ảnh phôi lên đây để căn chỉnh nội dung chữ khớp chính xác 100%!</p>
+            
+            <div class="upload-dropzone" id="dropzone-bg-template">
+              <input type="file" id="file-bg-template" accept="image/*" onchange="handleBgTemplateUpload(event)">
+              <div class="dropzone-content">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#52ab98" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <p><strong>Kéo thả ảnh phôi mẫu</strong> hoặc bấm vào đây để tải ảnh lên</p>
+                <span class="file-types">Hỗ trợ JPG, PNG, WebP (Khổ A4)</span>
+              </div>
+            </div>
+
+            <div class="bg-options-row" id="bg-options-panel" style="display: none;">
+              <div class="slider-group">
+                <label for="bg-opacity-slider">Độ mờ phôi nền: <strong id="lbl-opacity">40%</strong></label>
+                <input type="range" id="bg-opacity-slider" min="5" max="100" value="40" oninput="changeBgOpacity(this.value)">
+              </div>
+              <div class="checkbox-row">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="chk-print-bg" onchange="togglePrintBackground()">
+                  <span>Cho phép in luôn ảnh phôi (Bỏ chọn nếu chỉ in chữ đè lên giấy có sẵn)</span>
+                </label>
+              </div>
+              <button class="btn btn-sm btn-danger" onclick="removeBgTemplate()">Xóa Phôi Nền</button>
+            </div>
+          </div>
+
+          <!-- THẺ 2: TẢI LÊN LOGO CÔNG TY -->
+          <div class="tpl-card">
+            <div class="tpl-card-head">
+              <h3>2. Thay Đổi Logo Thương Hiệu</h3>
+              <span class="badge-mint">Tùy biến thương hiệu</span>
+            </div>
+            <p class="card-hint">Thêm logo doanh nghiệp của bạn ở góc trái trên đầu văn bản hoặc chèn dấu mộc đỏ điện tử.</p>
+            
+            <div class="upload-dropzone">
+              <input type="file" id="file-custom-logo" accept="image/*" onchange="handleLogoUpload(event)">
+              <div class="dropzone-content">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#52ab98" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+                <p><strong>Tải lên logo công ty</strong> (PNG trong suốt là tốt nhất)</p>
+                <span class="file-types">Hỗ trợ PNG, JPG, SVG</span>
+              </div>
+            </div>
+
+            <div class="logo-preview-box" id="logo-preview-box" style="display: none;">
+              <img id="img-logo-preview" src="" alt="Logo">
+              <button class="btn btn-sm btn-secondary" onclick="removeCustomLogo()">Gỡ Bỏ Logo</button>
+            </div>
+          </div>
+
+          <!-- THẺ 3: TÙY CHỈNH TIÊU ĐỀ & MẪU CÂU TỰ DO -->
+          <div class="tpl-card full-span">
+            <div class="tpl-card-head">
+              <h3>3. Tùy Biến Câu Từ Mẫu Văn Bản</h3>
+              <span class="badge-mint">Soạn thảo mẫu</span>
+            </div>
+            
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label for="tpl-custom-title">Tiêu Đề Văn Bản</label>
+                <input type="text" id="tpl-custom-title" value="BIÊN BẢN NGHIỆM THU, GIAO NHẬN HÀNG HÓA" oninput="syncCustomTitle(this.value)">
+              </div>
+              <div class="form-group">
+                <label for="tpl-custom-doccode">Mẫu Mã / Số Văn Bản</label>
+                <input type="text" id="tpl-custom-doccode" value="-2026/KD-TGDD/BBNT" oninput="syncDocNumber(this.value)">
+              </div>
+              <div class="form-group">
+                <label for="tpl-font-family">Kiểu Font Chữ In</label>
+                <select id="tpl-font-family" onchange="changeDocFont(this.value)">
+                  <option value="'Times New Roman', Times, serif">Times New Roman (Chuẩn văn bản hành chính Việt Nam)</option>
+                  <option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro (Hiện đại, trang nhã)</option>
+                  <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans (Sắc nét)</option>
+                  <option value="'Arial', sans-serif">Arial</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="template-actions-row">
+              <button class="btn btn-primary" onclick="switchMainTab('editor')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Áp Dụng Mẫu & Quay Lại Nhập Liệu
+              </button>
+              <button class="btn btn-secondary" onclick="exportTemplateJSON()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Xuất Cấu Hình Mẫu (File JSON)
+              </button>
+              <label class="btn btn-secondary file-btn-label">
+                <input type="file" id="file-import-json" accept=".json" onchange="importTemplateJSON(event)" style="display:none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Nhập Mẫu Đã Lưu (File JSON)
+              </label>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: HƯỚNG DẪN & SCRIPT ĐẨY LÊN GITHUB ==================== -->
+    <section class="tab-pane" id="pane-github">
+      <div class="github-guide-container">
+        <div class="guide-hero">
+          <div class="hero-icon-gh">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="currentColor">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path>
+            </svg>
+          </div>
+          <div class="hero-text">
+            <h2>Script & Hướng Dẫn Đẩy Mã Nguồn Lên GitHub</h2>
+            <p>Chia sẻ phần mềm in ấn này lên GitHub để chạy online trực tiếp qua <strong>GitHub Pages</strong> hoàn toàn miễn phí, truy cập từ mọi thiết bị (Laptop, Điện thoại, Máy tính bảng)!</p>
+          </div>
+        </div>
+
+        <div class="steps-grid">
+          
+          <!-- BƯỚC 1: TẠO REPO -->
+          <div class="step-card">
+            <div class="step-badge">Bước 1</div>
+            <h3>Tạo Repository Mới Trên GitHub</h3>
+            <p>Truy cập vào <a href="https://github.com/new" target="_blank" class="link-mint">github.com/new</a>:</p>
+            <ul>
+              <li><strong>Repository name:</strong> <code>in-hop-dong-a4</code></li>
+              <li>Chọn <strong>Public</strong> (để bật được GitHub Pages miễn phí).</li>
+              <li>Bấm nút <strong>Create repository</strong>.</li>
+            </ul>
+          </div>
+
+          <!-- BƯỚC 2: CHẠY SCRIPT TỰ ĐỘNG -->
+          <div class="step-card">
+            <div class="step-badge">Bước 2</div>
+            <h3>Chạy Script Tự Động Trong Terminal</h3>
+            <p>Mở Terminal trên máy tính Mac của bạn và chạy lệnh sau:</p>
+            <div class="code-box">
+              <code>cd /Users/linhvu/.gemini/antigravity-ide/scratch/in-hop-dong-a4
+chmod +x push_to_github.sh
+./push_to_github.sh https://github.com/leevu221-lang/in-hop-dong-a4.git</code>
+              <button class="btn-copy-code" onclick="copyCode(this)" title="Sao chép lệnh">Copy</button>
+            </div>
+          </div>
+
+          <!-- BƯỚC 3: BẬT GITHUB PAGES -->
+          <div class="step-card">
+            <div class="step-badge">Bước 3</div>
+            <h3>Bật Chế Độ Website Trực Tuyến (GitHub Pages)</h3>
+            <p>Sau khi push mã nguồn thành công:</p>
+            <ol>
+              <li>Vào <strong>Settings</strong> của Repo trên GitHub.</li>
+              <li>Chọn mục <strong>Pages</strong> ở thanh menu bên trái.</li>
+              <li>Tại <strong>Branch</strong>, chọn <code>main</code> và nhấn <strong>Save</strong>.</li>
+              <li>Sau 1 phút, bạn sẽ có link web online dạng: <code>https://leevu221-lang.github.io/in-hop-dong-a4/</code></li>
+            </ol>
+          </div>
+
+        </div>
+
+        <!-- CHI TIẾT SCRIPT PUSH_TO_GITHUB.SH -->
+        <div class="script-details-card">
+          <div class="script-details-head">
+            <h4>Nội Dung Script Tự Động <code>push_to_github.sh</code> Sẵn Có Trong Dự Án:</h4>
+          </div>
+          <pre class="script-code-block"><code>#!/bin/bash
+# Script tự động đẩy dự án lên GitHub
+REPO_URL=$1
+
+if [ -z "$REPO_URL" ]; then
+  echo "Vui lòng nhập đường dẫn repository GitHub của bạn:"
+  echo "Ví dụ: ./push_to_github.sh https://github.com/leevu221-lang/in-hop-dong-a4.git"
+  exit 1
+fi
+
+git init
+git add .
+git commit -m "Khởi tạo công cụ Quản lý & In ấn Hợp đồng - Biên bản nghiệm thu A4 tone xanh pastel"
+git branch -M main
+git remote remove origin 2>/dev/null
+git remote add origin "$REPO_URL"
+git push -u origin main --force
+
+echo "Đã đẩy mã nguồn lên GitHub thành công!"</code></pre>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- TOAST THÔNG BÁO -->
+  <div id="toast" class="toast-popup no-print"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
