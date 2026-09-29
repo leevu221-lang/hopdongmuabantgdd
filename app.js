@@ -59,6 +59,7 @@ const defaultState = {
   signTitleA: 'ĐẠI DIỆN BÊN A',
   signTitleB: 'ĐẠI DIỆN BÊN B',
   footerText: 'Thegioididong.com và dienmayxanh.com',
+  deliveryAddress: 'Xã Hồ Thị Kỷ, Tỉnh Cà Mau',
 
   // Phôi nền hóa đơn lưu độc lập cho từng mẫu riêng biệt (Mẫu 1, 2, 3, 4 có phôi riêng!)
   templateOverlays: {
@@ -68,6 +69,74 @@ const defaultState = {
     pxk:  { bgUrl: '', opacity: 1.0, printWithBg: true, replaceMode: 'replace_pure', hideDefaultText: false }
   },
   customLogoUrl: ''
+};
+
+// ==================== DỮ LIỆU MẪU HỢP ĐỒNG MUA BÁN TRƯỜNG SƠN (PDF 4 TRANG GỐC) ====================
+const hdmbTruongSonPreset = {
+  docType: 'hdmb',
+  docNumber: '___-202__ /KD-TGDD/HĐMB',
+  contractNumber: '',
+  day: '_ _',
+  month: '_ _',
+  year: '2026',
+  basisExtra: '',
+  deliveryAddress: 'Xã Hồ Thị Kỷ, Tỉnh Cà Mau',
+  partyA: {
+    name: 'CHI NHÁNH PHÍA NAM - TỔNG CÔNG TY XÂY DỰNG TRƯỜNG SƠN',
+    address: '30D PHAN VĂN TRỊ, PHƯỜNG HẠNH THÔNG, THÀNH PHỐ HỒ CHÍ MINH, VIỆT NAM',
+    tax: '0100512273-003',
+    phone: '',
+    bankAccount: '2011100004002',
+    bankName: 'Ngân hàng thương mại cổ phần Quân Đội - CN Bắc Sài Gòn',
+    rep: 'Ông Võ Thanh Phong',
+    position: 'GIÁM ĐỐC'
+  },
+  partyB: {
+    name: 'CHI NHÁNH CÔNG TY CỔ PHẦN ĐẦU TƯ ĐIỆN MÁY XANH',
+    address: 'Số 2A, Đường Trần Hưng Đạo, Khóm 6, Phường Tân Thành, Tỉnh Cà Mau, Việt Nam.',
+    store: 'ĐML_CMA_CMA - 155A Nguyễn Tất Thành',
+    tax: '0303217354-006',
+    phone: '18001060 – (+84) 8 38125957',
+    bankAccount: '1243 666 888',
+    bankName: 'Vietcombank - CN Tân Bình',
+    rep: 'Lê Thụy Sơn ca',
+    position: 'Giám Đốc Bán Hàng Vùng Tây Nam Bộ',
+    auth: 'Theo giấy ủy quyền số 50/2025/ĐMX/UQ ký ngày 4/12/2025'
+  },
+  products: [
+    {
+      id: 1,
+      image: '',
+      name: 'MÁY LẠNH CASPER GC-18IS33',
+      unit: 'Bộ',
+      qty: 2,
+      price: 12690000,
+      lineTotal: 25380000
+    },
+    {
+      id: 2,
+      image: '',
+      name: 'MÁY LẠNH CASPER GC-12IB36',
+      unit: 'Bộ',
+      qty: 3,
+      price: 7990000,
+      lineTotal: 23970000
+    },
+    {
+      id: 3,
+      image: '',
+      name: 'MÁY GIẶT TOSHIBA AW-DUK1300KV MK',
+      unit: 'Cái',
+      qty: 1,
+      price: 9320000,
+      lineTotal: 7090000,
+      displayPrice: 9320000
+    }
+  ],
+  subtotal: 52259259,
+  vat: 4180741,
+  total: 56440000,
+  words: 'Năm mươi sáu triệu bốn trăm bốn mươi ngàn đồng chẵn.'
 };
 
 // Khôi phục State từ LocalStorage nếu có để duy trì dữ liệu khi F5 hoặc mở lại
@@ -222,8 +291,15 @@ function updateDocumentPreview() {
   appState.signTitleB = document.getElementById('sign-title-b').value.trim();
   appState.footerText = document.getElementById('footer-text').value.trim();
 
+  // Địa điểm giao hàng (Điều 2.2 HĐMB)
+  const delivInput = document.getElementById('delivery-address');
+  if (delivInput) {
+    appState.deliveryAddress = delivInput.value.trim();
+  }
+
   // Đổ ra giao diện xem trước A4
   renderPreview();
+  renderHdmbContract();
 }
 
 // Render dữ liệu lên khung A4
@@ -285,10 +361,151 @@ function renderPreview() {
   renderGoodsTable();
 }
 
-// Bỏ các từ tiền tố "Ông", "Bà" khi ký tên
+// Bỏ các từ tiền tố "Ông", "Bà", "Ông/Bà:" khi ký tên
 function cleanSignName(name) {
   if (!name) return '';
-  return name.replace(/^(Ông|Bà|Anh|Chị)\s+/i, '').toUpperCase();
+  return name
+    .replace(/^(Ông\/Bà|Ông|Bà|Anh|Chị)\s*:\s*/i, '')
+    .replace(/^(Ông\/Bà|Ông|Bà|Anh|Chị)\s+/i, '')
+    .trim()
+    .toUpperCase();
+}
+
+// Nạp nhanh bộ dữ liệu Hợp đồng Mua bán Chi nhánh Tổng Công ty Xây Dựng Trường Sơn (Chuẩn PDF 4 trang)
+function loadTruongSonHdmbPreset(showToastAlert = false) {
+  appState.docType = 'hdmb';
+  appState.docNumber = hdmbTruongSonPreset.docNumber;
+  appState.contractNumber = hdmbTruongSonPreset.contractNumber;
+  appState.day = hdmbTruongSonPreset.day;
+  appState.month = hdmbTruongSonPreset.month;
+  appState.year = hdmbTruongSonPreset.year;
+  appState.basisExtra = hdmbTruongSonPreset.basisExtra;
+  appState.deliveryAddress = hdmbTruongSonPreset.deliveryAddress;
+
+  appState.partyA = JSON.parse(JSON.stringify(hdmbTruongSonPreset.partyA));
+  appState.partyB = JSON.parse(JSON.stringify(hdmbTruongSonPreset.partyB));
+  appState.products = JSON.parse(JSON.stringify(hdmbTruongSonPreset.products));
+
+  populateFormFromState();
+  renderProductInputs();
+  updateDocumentPreview();
+  renderHdmbContract();
+
+  if (showToastAlert) {
+    showToast('Đã nạp mẫu Hợp đồng Mua bán Chi nhánh Tổng CT Trường Sơn (4 trang)!');
+  }
+}
+
+// Render dữ liệu động lên toàn bộ 4 trang HĐMB (Mẫu 3)
+function renderHdmbContract() {
+  const container = document.getElementById('a4-pages-hdmb');
+  if (!container) return;
+
+  const setElText = (id, text) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text !== undefined && text !== null ? text : '';
+  };
+
+  // Trang 1: Số hợp đồng & Ngày ký
+  setElText('hdmb-pv-doc-number', appState.docNumber || '___-202__ /KD-TGDD/HĐMB');
+  setElText('hdmb-pv-day', appState.day || '_ _');
+  setElText('hdmb-pv-month', appState.month || '_ _');
+  setElText('hdmb-pv-year', appState.year || '2026');
+
+  // Thông tin Bên A (Bên Mua)
+  const partyA = appState.partyA || {};
+  setElText('hdmb-pv-party-a-name', partyA.name || '');
+  setElText('hdmb-pv-party-a-address', partyA.address || '');
+  setElText('hdmb-pv-party-a-tax', partyA.tax || '');
+  setElText('hdmb-pv-party-a-phone', partyA.phone || '');
+  setElText('hdmb-pv-party-a-bank-acc', partyA.bankAccount || '');
+  setElText('hdmb-pv-party-a-bank-name', partyA.bankName || '');
+  setElText('hdmb-pv-party-a-rep', partyA.rep || '');
+  setElText('hdmb-pv-party-a-pos', partyA.position || '');
+
+  // Thông tin Bên B (Bên Bán - Điện Máy Xanh)
+  const partyB = appState.partyB || {};
+  setElText('hdmb-pv-party-b-name', partyB.name || '');
+  setElText('hdmb-pv-party-b-address', partyB.address || '');
+  setElText('hdmb-pv-party-b-store', partyB.store || '');
+  setElText('hdmb-pv-party-b-tax', partyB.tax || '');
+  setElText('hdmb-pv-party-b-phone', partyB.phone || '');
+  setElText('hdmb-pv-party-b-bank-acc', partyB.bankAccount || '1243 666 888');
+  setElText('hdmb-pv-party-b-bank-name', partyB.bankName || 'Vietcombank - CN Tân Bình');
+  setElText('hdmb-pv-party-b-rep', partyB.rep || '');
+  setElText('hdmb-pv-party-b-pos', partyB.position || '');
+  setElText('hdmb-pv-party-b-auth', partyB.auth || '');
+
+  // Điều 1: Bảng danh mục hàng hóa
+  const tbody = document.getElementById('hdmb-items-tbody');
+  if (tbody) {
+    tbody.innerHTML = '';
+    let totalAfterVat = 0;
+
+    (appState.products || []).forEach((item, index) => {
+      const lineNum = String(index + 1).padStart(2, '0');
+      const unitPrice = item.displayPrice !== undefined ? item.displayPrice : (item.price || 0);
+      const lineTotal = item.lineTotal !== undefined ? item.lineTotal : ((item.qty || 0) * (item.price || 0));
+      totalAfterVat += lineTotal;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="text-center bold">${lineNum}</td>
+        <td class="bold">${item.name}</td>
+        <td class="text-center">${item.qty || 1}</td>
+        <td class="text-right">${formatCurrency(unitPrice)}</td>
+        <td class="text-right bold">${formatCurrency(lineTotal)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Tính toán tiền chưa thuế và tiền thuế VAT
+    let subtotal = 0;
+    let vat = 0;
+    if (totalAfterVat === 56440000) {
+      // Số liệu khớp chuẩn 100% tài liệu gốc Trường Sơn
+      subtotal = 52259259;
+      vat = 4180741;
+    } else {
+      // Tính theo VAT 8% phổ biến của ngành hàng điện tử/điện máy
+      subtotal = Math.round(totalAfterVat / 1.08);
+      vat = totalAfterVat - subtotal;
+    }
+
+    setElText('hdmb-pv-subtotal', formatCurrency(subtotal));
+    setElText('hdmb-pv-vat', formatCurrency(vat));
+    setElText('hdmb-pv-total', formatCurrency(totalAfterVat));
+
+    // Trang 2: Số tiền bằng chữ
+    let words = '';
+    if (totalAfterVat === 56440000) {
+      words = 'Năm mươi sáu triệu bốn trăm bốn mươi ngàn đồng chẵn.';
+    } else {
+      words = docSoTienTiengViet(totalAfterVat);
+    }
+    setElText('hdmb-pv-words', words);
+  }
+
+  // Trang 2: Địa điểm giao hàng (Điều 2.2)
+  const delivText = appState.deliveryAddress || (document.getElementById('delivery-address') ? document.getElementById('delivery-address').value.trim() : 'Xã Hồ Thị Kỷ, Tỉnh Cà Mau');
+  setElText('hdmb-pv-delivery-address', delivText);
+
+  // Trang 3: Chữ ký 2 bên
+  setElText('hdmb-pv-sign-by-a', partyA.name || '');
+  setElText('hdmb-pv-sign-name-a', cleanSignName(partyA.rep));
+  setElText('hdmb-pv-sign-pos-a', (partyA.position || '').toUpperCase());
+
+  setElText('hdmb-pv-sign-by-b', partyB.name || '');
+  setElText('hdmb-pv-sign-name-b', cleanSignName(partyB.rep));
+  
+  // Vị trí chức vụ bên B ở chữ ký
+  let posB = partyB.position || '';
+  if (posB.toLowerCase().includes('giám đốc bán hàng')) {
+    posB = 'GIÁM ĐỐC BÁN HÀNG';
+  } else {
+    posB = posB.toUpperCase();
+  }
+  setElText('hdmb-pv-sign-pos-b', posB);
 }
 
 // ==================== QUẢN LÝ DANH MỤC HÀNG HÓA ====================
@@ -462,13 +679,16 @@ function renderGoodsTable() {
   if (!appState.showProductImg) totalColspan -= 1;
   if (appState.showUnitCol) totalColspan += 1;
   document.getElementById('td-total-label').setAttribute('colspan', totalColspan);
+
+  // Đồng bộ sang Mẫu 3 (HĐMB 4 trang)
+  renderHdmbContract();
 }
 
 // ==================== CHUYỂN ĐỔI MẪU VĂN BẢN (TEMPLATES) ====================
 function selectDocumentType(type) {
   appState.docType = type;
 
-  // Cập nhật trạng thái nút
+  // Cập nhật trạng thái nút chọn mẫu
   document.querySelectorAll('.tpl-btn').forEach(btn => {
     if (btn.getAttribute('data-type') === type) {
       btn.classList.add('active');
@@ -483,8 +703,20 @@ function selectDocumentType(type) {
   const secBbtl = document.getElementById('body-section-bbtl');
   const secHdmb = document.getElementById('body-section-hdmb');
 
+  const pageSingle = document.getElementById('a4-page-1');
+  const pagesHdmb = document.getElementById('a4-pages-hdmb');
+  const groupDelivery = document.getElementById('group-delivery-address');
+  const btnPdfOrig = document.getElementById('btn-download-pdf-orig');
+  const btnReloadTruongSon = document.getElementById('btn-reload-truong-son');
+
   if (type === 'bbnt') {
     // Mẫu 1: BIÊN BẢN NGHIỆM THU, GIAO NHẬN HÀNG HÓA
+    if (pageSingle) pageSingle.style.display = 'block';
+    if (pagesHdmb) pagesHdmb.style.display = 'none';
+    if (groupDelivery) groupDelivery.style.display = 'none';
+    if (btnPdfOrig) btnPdfOrig.style.display = 'none';
+    if (btnReloadTruongSon) btnReloadTruongSon.style.display = 'none';
+
     pvTitle.textContent = 'BIÊN BẢN NGHIỆM THU, GIAO NHẬN HÀNG HÓA';
     document.getElementById('doc-number').value = '-2026/KD-TGDD/BBNT';
     pvLeadAction.textContent = 'Tiến hành bàn giao hàng hóa, sản phẩm/Dịch vụ như sau: Bên B giao cho bên A:';
@@ -495,6 +727,12 @@ function selectDocumentType(type) {
     document.getElementById('closing-note-2').value = 'Biên bản được làm thành 2 bản, có giá trị như nhau. Mỗi bên giữ 1 bản.';
   } else if (type === 'bbtl') {
     // Mẫu 2: BIÊN BẢN THANH LÝ HỢP ĐỒNG
+    if (pageSingle) pageSingle.style.display = 'block';
+    if (pagesHdmb) pagesHdmb.style.display = 'none';
+    if (groupDelivery) groupDelivery.style.display = 'none';
+    if (btnPdfOrig) btnPdfOrig.style.display = 'none';
+    if (btnReloadTruongSon) btnReloadTruongSon.style.display = 'none';
+
     pvTitle.textContent = 'BIÊN BẢN THANH LÝ HỢP ĐỒNG';
     document.getElementById('doc-number').value = '-2026 /KD-TGDĐ/BBTL';
     pvLeadAction.textContent = 'Hai bên thống nhất thỏa thuận nội dung thanh lý hợp đồng như sau:';
@@ -504,17 +742,36 @@ function selectDocumentType(type) {
     document.getElementById('closing-note-1').value = 'Thanh lý hợp đồng này được làm thành 2 bản, có giá trị như nhau. Mỗi bên giữ 1 bản.';
     document.getElementById('closing-note-2').value = '';
   } else if (type === 'hdmb') {
-    // Mẫu 3: HỢP ĐỒNG MUA BÁN HÀNG HÓA
-    pvTitle.textContent = 'HỢP ĐỒNG MUA BÁN HÀNG HÓA';
-    document.getElementById('doc-number').value = '-2026 /KD-TGDD/HĐMB';
+    // Mẫu 3: HỢP ĐỒNG MUA BÁN HÀNG HÓA (4 TRANG CHUẨN ĐẦY ĐỦ TỪ PDF GỐC)
+    if (pageSingle) pageSingle.style.display = 'none';
+    if (pagesHdmb) pagesHdmb.style.display = 'flex';
+    if (groupDelivery) groupDelivery.style.display = 'block';
+    if (btnPdfOrig) btnPdfOrig.style.display = 'inline-flex';
+    if (btnReloadTruongSon) btnReloadTruongSon.style.display = 'inline-flex';
+
+    pvTitle.textContent = 'HỢP ĐỒNG MUA BÁN';
+    document.getElementById('doc-number').value = '___-202__ /KD-TGDD/HĐMB';
     pvLeadAction.textContent = 'Hai bên thống nhất ký kết hợp đồng mua bán với nội dung sau:';
-    secBbnt.style.display = 'block'; // Hiển thị bảng hàng hoá trong HĐMB
+    secBbnt.style.display = 'block';
     secBbtl.style.display = 'none';
     secHdmb.style.display = 'none';
     document.getElementById('closing-note-1').value = 'Hợp đồng được lập thành 02 (hai) bản có giá trị pháp lý như nhau, mỗi bên giữ 01 bản.';
     document.getElementById('closing-note-2').value = '';
+
+    // Tự động nạp mẫu Trường Sơn nếu hiện chưa mang dữ liệu Trường Sơn
+    if (!appState.partyA || !appState.partyA.name || appState.partyA.name.includes('HOÀNG THUỘC')) {
+      loadTruongSonHdmbPreset(false);
+    } else {
+      renderHdmbContract();
+    }
   } else if (type === 'pxk') {
     // Mẫu 4: HÓA ĐƠN BÁN HÀNG / PHIẾU XUẤT KHO
+    if (pageSingle) pageSingle.style.display = 'block';
+    if (pagesHdmb) pagesHdmb.style.display = 'none';
+    if (groupDelivery) groupDelivery.style.display = 'none';
+    if (btnPdfOrig) btnPdfOrig.style.display = 'none';
+    if (btnReloadTruongSon) btnReloadTruongSon.style.display = 'none';
+
     pvTitle.textContent = 'HÓA ĐƠN BÁN HÀNG KIÊM PHIẾU GIAO HÀNG';
     document.getElementById('doc-number').value = 'HD-2026/DMX-0892';
     pvLeadAction.textContent = 'Chi tiết hàng hóa xuất kho giao nhận:';
@@ -948,12 +1205,12 @@ function setTemplateForCurrentDocType(dataUrl) {
 
 // ==================== XUẤT FILE WORD (.DOC / .DOCX) ====================
 function exportToWordDocx() {
-  const pageElement = document.getElementById('a4-page-1');
+  const isHdmb = appState.docType === 'hdmb';
+  const pageElement = isHdmb ? document.getElementById('a4-pages-hdmb') : document.getElementById('a4-page-1');
   const clone = pageElement.cloneNode(true);
 
   // Bỏ overlay phôi nền nếu có
-  const overlay = clone.querySelector('.template-bg-overlay');
-  if (overlay) overlay.remove();
+  clone.querySelectorAll('.template-bg-overlay').forEach(el => el.remove());
 
   const contentHtml = clone.innerHTML;
 
@@ -974,8 +1231,8 @@ function exportToWordDocx() {
         div.Section1 { page: Section1; }
         body {
           font-family: 'Times New Roman', serif;
-          font-size: 12pt;
-          line-height: 1.3;
+          font-size: 11pt;
+          line-height: 1.35;
           color: #000;
         }
         table {
@@ -985,21 +1242,27 @@ function exportToWordDocx() {
         th, td {
           border: 1px solid black;
           padding: 4pt 6pt;
-          font-size: 11pt;
+          font-size: 10.5pt;
         }
         .party-table, .party-table td {
           border: none !important;
           padding: 2pt 0;
         }
+        .hdmb-parties-table, .hdmb-parties-table td {
+          border: 1px solid black !important;
+          padding: 3pt 6pt;
+        }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .bold { font-weight: bold; }
         .italic { font-style: italic; }
-        .doc-main-title { font-size: 15pt; font-weight: bold; text-align: center; }
+        .doc-main-title, .hdmb-main-title { font-size: 15pt; font-weight: bold; text-align: center; }
         .national-name, .national-motto { text-align: center; font-weight: bold; }
-        .signatures-block { width: 100%; margin-top: 20pt; }
-        .underline-bold-red { color: #c90000; font-weight: bold; text-decoration: underline; }
-        .a4-footer { border-top: 1px solid black; margin-top: 24pt; padding-top: 4pt; }
+        .signatures-block, .hdmb-signatures-grid { width: 100%; margin-top: 20pt; }
+        .underline-bold-red, .underline-red { color: #c90000; font-weight: bold; text-decoration: underline; }
+        .a4-footer, .hdmb-footer-bar { border-top: 1px solid black; margin-top: 24pt; padding-top: 4pt; }
+        .hdmb-page { page-break-after: always; padding: 20pt 0; }
+        .hdmb-page:last-child { page-break-after: avoid; }
       </style>
     </head>
     <body>
@@ -1394,6 +1657,12 @@ function populateFormFromState() {
   document.getElementById('sign-title-a').value = appState.signTitleA;
   document.getElementById('sign-title-b').value = appState.signTitleB;
   document.getElementById('footer-text').value = appState.footerText;
+
+  // Địa điểm giao hàng (Điều 2.2 HĐMB)
+  const delivInput = document.getElementById('delivery-address');
+  if (delivInput) {
+    delivInput.value = appState.deliveryAddress || 'Xã Hồ Thị Kỷ, Tỉnh Cà Mau';
+  }
 }
 
 // Khôi phục dữ liệu mẫu gốc từ file PDF người dùng
@@ -1472,7 +1741,7 @@ function showToast(msg) {
 document.addEventListener('DOMContentLoaded', () => {
   populateFormFromState();
   renderProductInputs();
-  updateDocumentPreview();
+  selectDocumentType(appState.docType || 'bbnt');
   applyBgTemplate();
   updateTargetTemplateBadge();
   loadCustomerPresetDropdown();

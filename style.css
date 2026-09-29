@@ -1816,3 +1816,205 @@ html, body {
   border-color: #5eead4;
 }
 
+/* ==================== MẪU 3: HỢP ĐỒNG MUA BÁN 4 TRANG CHUẨN THẾ GIỚI DI ĐỘNG ==================== */
+.multipage-contract {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hdmb-page {
+  font-family: 'Times New Roman', Times, serif !important;
+  color: #000000 !important;
+  line-height: 1.35;
+  font-size: 11pt;
+}
+
+.hdmb-header-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5pt;
+  color: #222222;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.hdmb-title-block {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.hdmb-main-title {
+  font-size: 15pt;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+}
+
+.hdmb-doc-code {
+  font-size: 11pt;
+  margin: 0 0 4px 0;
+  font-weight: 500;
+}
+
+.hdmb-date-line {
+  font-size: 11pt;
+  font-style: italic;
+  margin: 0;
+}
+
+.hdmb-parties-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+}
+
+.hdmb-parties-table td {
+  border: 1px solid #000000;
+  padding: 3px 6px;
+  vertical-align: top;
+  font-size: 10.5pt;
+  line-height: 1.3;
+}
+
+.hdmb-parties-table .party-head-cell {
+  font-weight: bold;
+  background-color: #fafafa;
+}
+
+.hdmb-lead-text {
+  font-size: 11pt;
+  margin: 8px 0 6px 0;
+  line-height: 1.35;
+}
+
+.hdmb-clause-header {
+  font-size: 11pt;
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+
+.hdmb-clause-subtext {
+  font-size: 11pt;
+  margin: 0 0 6px 0;
+}
+
+.hdmb-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.hdmb-items-table th,
+.hdmb-items-table td {
+  border: 1px solid #000000;
+  padding: 4px 6px;
+  font-size: 10.5pt;
+}
+
+.hdmb-items-table th {
+  text-align: center;
+  font-weight: bold;
+  background-color: #fafafa;
+}
+
+.hdmb-legal-text p {
+  margin: 0 0 7px 0;
+  font-size: 11pt;
+  line-height: 1.35;
+  text-align: justify;
+}
+
+.hdmb-legal-text .indent-p {
+  padding-left: 18px;
+  margin: 0 0 5px 0;
+}
+
+.hdmb-section-title {
+  font-size: 11pt;
+  font-weight: bold;
+  margin: 10px 0 4px 0;
+  text-transform: uppercase;
+}
+
+.doc-link {
+  color: #000000;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.hdmb-signatures-grid {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding: 0 10px;
+}
+
+.hdmb-sig-col {
+  width: 48%;
+  text-align: left;
+  line-height: 1.45;
+  font-size: 10.5pt;
+}
+
+.hdmb-footer-bar {
+  position: absolute;
+  bottom: 8mm;
+  left: 20mm;
+  right: 15mm;
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5pt;
+  font-family: 'Times New Roman', serif;
+  border-top: 1px solid #000000;
+  padding-top: 3px;
+  background: #ffffff;
+}
+
+.underline-red {
+  color: #c90000;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.btn-pdf-download {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+  padding: 5px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-pdf-download:hover {
+  background: #ffe4e6;
+  border-color: #fda4af;
+}
+
+@media print {
+  .multipage-contract {
+    display: block !important;
+    gap: 0 !important;
+  }
+  .multipage-contract .a4-page {
+    page-break-after: always !important;
+    break-after: page !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    box-shadow: none !important;
+  }
+  .multipage-contract .a4-page:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+}
+
+

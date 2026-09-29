@@ -318,6 +318,10 @@
                   <input type="text" id="sign-title-b" value="ĐẠI DIỆN BÊN B" oninput="updateDocumentPreview()">
                 </div>
               </div>
+              <div class="form-group" id="group-delivery-address" style="display: none;">
+                <label for="delivery-address">Địa Điểm Giao Hàng (Điều 2.2 HĐMB)</label>
+                <input type="text" id="delivery-address" value="Xã Hồ Thị Kỷ, Tỉnh Cà Mau" oninput="updateDocumentPreview()">
+              </div>
               <div class="form-group">
                 <label for="footer-text">Nội Dung Chân Trang (Footer)</label>
                 <input type="text" id="footer-text" value="Thegioididong.com và dienmayxanh.com" oninput="updateDocumentPreview()">
@@ -343,6 +347,13 @@
                 <span class="dot-online"></span>
                 Xem Trước Khổ A4 (210 × 297 mm)
               </span>
+              <a href="assets/hop_dong_mua_ban_truong_son.pdf" download="Hop_Dong_Mua_Ban_Truong_Son.pdf" class="btn-pdf-download" id="btn-download-pdf-orig" title="Tải file PDF hợp đồng mua bán gốc 4 trang" style="display: none;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Tải PDF Gốc (4 Trang)
+              </a>
+              <button type="button" class="btn-chip" id="btn-reload-truong-son" onclick="loadTruongSonHdmbPreset(true)" title="Nạp nhanh lại dữ liệu Hợp đồng Trường Sơn" style="display: none;">
+                🏢 Nạp Mẫu Trường Sơn
+              </button>
               <button class="btn-print-floating" onclick="printDocument()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                 In Bản Này (Ctrl + P)
@@ -601,6 +612,265 @@
                 <div class="footer-right">1/1</div>
               </footer>
             </article>
+
+            <!-- ==================== MẪU 3: HỢP ĐỒNG MUA BÁN 4 TRANG CHUẨN THẾ GIỚI DI ĐỘNG (TRƯỜNG SƠN) ==================== -->
+            <div id="a4-pages-hdmb" class="multipage-contract" style="display: none;">
+              
+              <!-- TRANG 1: TIÊU ĐỀ, BÊN A, BÊN B, BẢNG HÀNG HÓA -->
+              <article class="a4-page hdmb-page" id="hdmb-page-1">
+                <div class="template-bg-overlay" id="template-bg-overlay-hdmb-1"></div>
+                <div class="page-content">
+                  <div class="hdmb-header-top">
+                    <span class="muted-doc-code">Pháp Chế_111124_TGDD_VN</span>
+                    <span class="muted-page-num">1</span>
+                  </div>
+
+                  <div class="hdmb-title-block">
+                    <h2 class="hdmb-main-title">HỢP ĐỒNG MUA BÁN</h2>
+                    <p class="hdmb-doc-code">Số./No.: <span id="hdmb-pv-doc-number">___-202__ /KD-TGDD/HĐMB</span></p>
+                    <p class="hdmb-date-line">Hôm nay, ngày <span id="hdmb-pv-day">_ _</span>/<span id="hdmb-pv-month">_ _</span>/<span id="hdmb-pv-year">2026</span> (“Ngày Ký”), chúng tôi gồm có:</p>
+                  </div>
+
+                  <!-- BẢNG BÊN A & BÊN B CHUẨN THEO FILE HỢP ĐỒNG -->
+                  <table class="hdmb-parties-table">
+                    <tr>
+                      <td colspan="2" class="party-head-cell">
+                        BÊN MUA (BÊN A): <span id="hdmb-pv-party-a-name" class="bold">CHI NHÁNH PHÍA NAM - TỔNG CÔNG TY XÂY DỰNG TRƯỜNG SƠN</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="width: 25%;">Trụ sở đăng ký</td>
+                      <td>: <span id="hdmb-pv-party-a-address">30D PHAN VĂN TRỊ, PHƯỜNG HẠNH THÔNG, THÀNH PHỐ HỒ CHÍ MINH, VIỆT NAM</span></td>
+                    </tr>
+                    <tr>
+                      <td>Mã số thuế</td>
+                      <td>: <span id="hdmb-pv-party-a-tax">0100512273-003</span></td>
+                    </tr>
+                    <tr>
+                      <td>Điện thoại – Fax</td>
+                      <td>: <span id="hdmb-pv-party-a-phone"></span></td>
+                    </tr>
+                    <tr>
+                      <td>Số tài khoản</td>
+                      <td>: <span id="hdmb-pv-party-a-bank-acc">2011100004002</span></td>
+                    </tr>
+                    <tr>
+                      <td>Tại ngân hàng</td>
+                      <td>: <span id="hdmb-pv-party-a-bank-name">Ngân hàng thương mại cổ phần Quân Đội - CN Bắc Sài Gòn</span></td>
+                    </tr>
+                    <tr>
+                      <td>Đại diện bởi</td>
+                      <td>: <span id="hdmb-pv-party-a-rep" class="bold">Ông Võ Thanh Phong</span> - Chức vụ : <span id="hdmb-pv-party-a-pos" class="bold">GIÁM ĐỐC</span></td>
+                    </tr>
+                    <tr>
+                      <td colspan="2" class="party-head-cell">
+                        BÊN BÁN (BÊN B): <span id="hdmb-pv-party-b-name" class="bold">CHI NHÁNH CÔNG TY CỔ PHẦN ĐẦU TƯ ĐIỆN MÁY XANH</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Trụ sở đăng ký</td>
+                      <td>: <span id="hdmb-pv-party-b-address">Số 2A, Đường Trần Hưng Đạo, Khóm 6, Phường Tân Thành, Tỉnh Cà Mau, Việt Nam.</span></td>
+                    </tr>
+                    <tr>
+                      <td>Văn phòng điều hành</td>
+                      <td>: <span id="hdmb-pv-party-b-store">ĐML_CMA_CMA - 155A Nguyễn Tất Thành</span></td>
+                    </tr>
+                    <tr>
+                      <td>Mã số thuế</td>
+                      <td>: <span id="hdmb-pv-party-b-tax">0303217354-006</span></td>
+                    </tr>
+                    <tr>
+                      <td>Điện thoại – Fax</td>
+                      <td>: <span id="hdmb-pv-party-b-phone">18001060 – (+84) 8 38125957</span></td>
+                    </tr>
+                    <tr>
+                      <td>Số tài khoản</td>
+                      <td>: <span id="hdmb-pv-party-b-bank-acc">1243 666 888</span></td>
+                    </tr>
+                    <tr>
+                      <td>Tại ngân hàng</td>
+                      <td>: <span id="hdmb-pv-party-b-bank-name">Vietcombank - CN Tân Bình</span></td>
+                    </tr>
+                    <tr>
+                      <td>Đại diện bởi</td>
+                      <td>
+                        : Ông/Bà: <span id="hdmb-pv-party-b-rep" class="bold">Lê Thụy Sơn ca</span><br>
+                        &nbsp;&nbsp;Chức vụ: <span id="hdmb-pv-party-b-pos" class="bold">Giám Đốc Bán Hàng Vùng Tây Nam Bộ</span><br>
+                        &nbsp;&nbsp;(<span id="hdmb-pv-party-b-auth">Theo giấy ủy quyền số 50/2025/ĐMX/UQ ký ngày 4/12/2025</span>)
+                      </td>
+                    </tr>
+                  </table>
+
+                  <p class="hdmb-lead-text">Sau khi bàn bạc, hai bên thống nhất ký kết Hợp Đồng Mua Bán này (“Hợp Đồng”) với các điều khoản sau:</p>
+
+                  <div class="hdmb-clause-header">
+                    <strong>ĐIỀU 1: ĐỐI TƯỢNG HỢP ĐỒNG</strong>
+                  </div>
+                  <p class="hdmb-clause-subtext">1.1 Bên B đồng ý bán và Bên A đồng ý mua sản phẩm của Bên B với chủng loại, tính năng kỹ thuật và giá cả cụ thể như sau (Sau đây gọi tắt là “Sản Phẩm”):</p>
+
+                  <!-- BẢNG HÀNG HÓA CHUẨN TRANG 1 -->
+                  <table class="hdmb-items-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 10%;">STT/NO.</th>
+                        <th style="width: 45%;">Mô tả hàng hóa</th>
+                        <th style="width: 12%;">Số lượng</th>
+                        <th style="width: 16%;">Đơn giá (VND)</th>
+                        <th style="width: 17%;">Thành tiền (VND)</th>
+                      </tr>
+                    </thead>
+                    <tbody id="hdmb-items-tbody">
+                      <!-- Render động các dòng hàng hóa -->
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colspan="4" class="bold">Tổng tiền (chưa thuế) :</td>
+                        <td class="text-right bold"><span id="hdmb-pv-subtotal">52.259.259</span> vnd</td>
+                      </tr>
+                      <tr>
+                        <td colspan="4" class="bold">Thuế giá trị gia tăng :</td>
+                        <td class="text-right bold"><span id="hdmb-pv-vat">4.180.741</span> vnd</td>
+                      </tr>
+                      <tr>
+                        <td colspan="4" class="bold">Tổng tiền (đã bao gồm VAT) :</td>
+                        <td class="text-right bold"><span id="hdmb-pv-total">56.440.000</span> vnd</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+
+                <footer class="hdmb-footer-bar">
+                  <span>Pháp Chế_111124_TGDD_VN</span>
+                  <span>1</span>
+                </footer>
+              </article>
+
+              <!-- TRANG 2: ĐIỀU 1 (TIẾP) ĐẾN ĐIỀU 5 -->
+              <article class="a4-page hdmb-page" id="hdmb-page-2">
+                <div class="template-bg-overlay" id="template-bg-overlay-hdmb-2"></div>
+                <div class="page-content">
+                  <div class="hdmb-header-top">
+                    <span class="muted-doc-code">Pháp Chế_111124_TGDD_VN</span>
+                    <span class="muted-page-num">2</span>
+                  </div>
+
+                  <p style="margin-top: 4px; margin-bottom: 10px;">
+                    <strong class="underline-red">Tổng giá bằng chữ: <span id="hdmb-pv-words">Năm mươi sáu triệu bốn trăm bốn mươi ngàn đồng chẵn.</span></strong>
+                  </p>
+
+                  <div class="hdmb-legal-text">
+                    <p>1.2 Tổng tiền mà Bên A phải thanh toán cho Bên B theo quy định tại Điều 1.1 (“Giá Sản Phẩm”) là chi phí cố định không thay đổi trong suốt quá trình thực hiện Hợp Đồng và chưa bao gồm phần chi phí vật tư và/hoặc các chi phí khác phát sinh khi lắp đặt (nếu có). Các chi phí phát sinh này được quy định tại website: <span class="doc-link">https://www.dienmayxanh.com/kinh-nghiem-hay/chinh-sach-giao-hang-lap-dat-1261528</span> vào thời điểm lắp đặt.</p>
+                    
+                    <p>1.3 Giá Sản Phẩm được Bên A thanh toán cho Bên B theo quy định tại Điều 3 Hợp Đồng này. Chi phí vật tư và/hoặc chi phí khác phát sinh khi lắp đặt sẽ được thanh toán bằng tiền mặt/chuyển khoản ngay khi Bên B lắp đặt cho Bên A hoàn tất.</p>
+                    
+                    <p>1.4 Trường hợp Sản Phẩm cần lắp đặt thì Bên A chịu trách nhiệm chuẩn bị các thiết bị sau và điểm chờ đấu nối cụ thể:</p>
+                    <p class="indent-p">a. Điểm lắp đặt cao trên 4m (tính từ sàn) thì Bên A tự chuẩn bị thang phù hợp hoặc dàn giáo.</p>
+                    <p class="indent-p">b. Liên quan đến thiết bị cần cấp và thoát nước, Bên A cần phải có ống âm chờ cấp vào máy và ra các thiết bị sẵn tại vị trí lắp máy (Đầu chờ nước cấp, đầu ra nóng, Bộ pha nước ra nóng lạnh, ống thoát nước, v.v.).</p>
+
+                    <h4 class="hdmb-section-title">ĐIỀU 2: THỜI GIAN VÀ ĐỊA ĐIỂM GIAO HÀNG</h4>
+                    <p>2.1 Thời gian giao hàng: Bên B thực hiện giao Hàng hóa trong vòng ba (03) kể từ ngày Bên B được Ngân hàng báo có đúng, đầy đủ Giá Sản Phẩm vào tài khoản ngân hàng của Bên B. Trường hợp ngày Ngân hàng báo có rơi vào thứ bảy, chủ nhật hoặc ngày nghỉ Lễ, Tết theo quy định pháp luật thì thời hạn bắt đầu được tính từ ngày làm việc tiếp theo hoặc theo thông báo của Bên B (tùy trường hợp).</p>
+                    <p>2.2 Địa điểm giao hàng: Tại địa chỉ: <strong id="hdmb-pv-delivery-address">Xã Hồ Thị Kỷ, Tỉnh Cà Mau</strong></p>
+
+                    <h4 class="hdmb-section-title">ĐIỀU 3: THANH TOÁN</h4>
+                    <p>3.1 Bên A sẽ thanh toán 100% Giá Sản Phẩm cho Bên B bằng các chuyển khoản vào tài khoản ngân hàng của Bên B sau khi Hợp Đồng được ký kết. Thông tin tài khoản ngân hàng của Bên B:</p>
+                    <p class="indent-p">- Chủ tài khoản: <strong>CÔNG TY CỔ PHẦN ĐẦU TƯ ĐIỆN MÁY XANH</strong></p>
+                    <p class="indent-p">- Số tài khoản: <strong>1243 666 888</strong></p>
+                    <p class="indent-p">- Tại ngân hàng: <strong>Vietcombank - CN Tân Bình</strong></p>
+                    <p class="indent-p">- Địa chỉ ngân hàng: <strong>CN Tân Bình</strong></p>
+                    <p>3.2 Xuất hóa đơn:</p>
+                    <p class="indent-p">a. Giao hàng khu vực Hồ Chí Minh: Bên B trực tiếp giao hàng và xuất hóa đơn cho Bên A</p>
+                    <p class="indent-p">b. Giao hàng ở tỉnh: Bên B ủy quyền cho Chi nhánh của Bên B tại các tỉnh giao hàng và xuất hóa đơn cho Bên A.</p>
+
+                    <h4 class="hdmb-section-title">ĐIỀU 4: CHÍNH SÁCH BẢO HÀNH, ĐỔI, TRẢ SẢN PHẨM VÀ HOÀN TIỀN</h4>
+                    <p>4.1 Sản Phẩm do Bên B cung cấp sẽ được bảo hành theo tiêu chuẩn của nhà sản xuất hoặc nhà phân phối. Sản phẩm sẽ được kích hoạt bảo hành ngay tại thời điểm Bên B xuất hóa đơn VAT cho Bên A.</p>
+                    <p>4.2 Chính sách bảo hành của nhà sản xuất hoặc nhà phân phối được đính kèm theo sản phẩm hoặc có thể tham khảo tại website của nhà sản xuất hoặc nhà phân phối;</p>
+                    <p>4.3 Nếu sản phẩm có áp dụng chính sản đổi trả hoặc hoàn tiền của Bên B vui lòng xem chính sách tại website <span class="doc-link">https://www.dienmayxanh.com/bao-hanh-doi-tra</span> (hoặc <span class="doc-link">https://www.thegioididong.com/chinh-sach-bao-hanh-san-pham</span> áp dụng tùy từng loại sản phẩm). Bên B bảo lưu quyền thay đổi các chính sách này tại từng thời điểm và không cần sự chấp thuận của Bên A.</p>
+                    <p>4.4 Cho mục đích bảo hành hoặc khiếu nại về Sản Phẩm Bên A liên hệ số điện thoại như được công khai tại website <span class="doc-link">https://www.dienmayxanh.com/</span> hoặc <span class="doc-link">https://www.thegioididong.com/</span>.</p>
+
+                    <h4 class="hdmb-section-title">ĐIỀU 5: NGHĨA VỤ CÁC BÊN</h4>
+                    <p>5.1 Nghĩa vụ của Bên A:</p>
+                    <p class="indent-p">a. Cam kết không tiết lộ cho bên thứ ba bất kỳ thông tin nào có liên quan đến việc thực hiện Hợp đồng này.</p>
+                    <p class="indent-p">b. Thanh toán cho Bên A Giá Sản Phẩm và chi phí vật tư đúng và đầy đủ theo quy định Hợp Đồng này.</p>
+                    <p class="indent-p">c. Bên A đồng ý với chính sách thu thập thông tin và xử lý dữ liệu của Bên B theo các điều khoản và điều kiện đã được quy định tại website <span class="doc-link">https://www.dienmayxanh.com/</span> hoặc <span class="doc-link">https://www.thegioididong.com/</span></p>
+                  </div>
+                </div>
+
+                <footer class="hdmb-footer-bar">
+                  <span>Pháp Chế_111124_TGDD_VN</span>
+                  <span>2</span>
+                </footer>
+              </article>
+
+              <!-- TRANG 3: ĐIỀU 5 (TIẾP) ĐẾN ĐIỀU 8 & CHỮ KÝ 2 BÊN -->
+              <article class="a4-page hdmb-page" id="hdmb-page-3">
+                <div class="template-bg-overlay" id="template-bg-overlay-hdmb-3"></div>
+                <div class="page-content">
+                  <div class="hdmb-header-top">
+                    <span class="muted-doc-code">Pháp Chế_111124_TGDD_VN</span>
+                    <span class="muted-page-num">3</span>
+                  </div>
+
+                  <div class="hdmb-legal-text" style="margin-top: 6px;">
+                    <p class="indent-p">d. Thực hiện đúng các cam kết được ghi trong Hợp Đồng này.</p>
+                    <p>5.2 Nghĩa vụ của Bên B</p>
+                    <p class="indent-p">a. Đảm bảo cung cấp Sản Phẩm mới 100%, đúng với quy cách, giá cả, thời gian giao hàng theo cam kết tại Điều 1 và Điều 2 Hợp Đồng này.</p>
+                    <p class="indent-p">b. Cam kết không tiết lộ cho bên thứ ba bất kỳ thông tin nào có liên quan đến việc thực hiện Hợp đồng này.</p>
+                    <p class="indent-p">c. Thực hiện đúng các cam kết được ghi trong Hợp Đồng này.</p>
+
+                    <h4 class="hdmb-section-title">ĐIỀU 6: THỜI HẠN HỢP ĐỒNG</h4>
+                    <p>Hợp Đồng này tự động chấm dứt trong trường hợp sau:</p>
+                    <p>6.1 Bên A không thực hiện nghĩa vụ thanh toán trong vòng 10 (mười) ngày làm việc kể từ Ngày Ký thì xem như Bên A không có nhu cầu mua hàng và Bên B không có nghĩa vụ giữ giá, hàng hóa cho Bên A. Khi đó, Hợp Đồng tự động chấm dứt. Trường hợp Bên A tiếp tục mua hàng thì Hai Bên phải ký lại Hợp Đồng mới; hoặc</p>
+                    <p>6.2 Bên A đã thực hiện nghĩa vụ thanh toán: Hợp đồng được tự động chấm dứt sau khi Hai Bên hoàn thành các nghĩa vụ quy định tại Hợp Đồng. Riêng các điều khoản về bảo hành vẫn có hiệu lực cho đến khi hết thời hạn bảo hành theo quy định của nhà sản xuất hoặc nhà phân phối.</p>
+
+                    <h4 class="hdmb-section-title">ĐIỀU 7: CAM KẾT CHỐNG THAM NHŨNG</h4>
+                    <p>7.1 Các bên cam kết tuân thủ luật pháp chống tham nhũng, không tham gia bất kỳ hành vi hối lộ, gian lận, tặng quà hoặc gợi ý tặng quà dưới bất kỳ hình thức nào cho nhân viên của bên kia nhằm đạt được lợi ích quá trình thực hiện hợp đồng. Nếu phát hiện vi phạm, bên bị vi phạm có quyền chấm dứt hợp đồng ngay lập tức, và bên vi phạm phải bồi thường mọi thiệt hại phát sinh.</p>
+                    <p>7.2 Bên Mua chỉ thanh toán số tiền đã được các bên thống nhất trong hợp đồng hoặc các văn bản thanh toán liên quan. Bên Mua chỉ thanh toán vào tài khoản của Bên Bán như trên và không được thanh toán vào bất kỳ tài khoản cá nhân/tổ chức nào khác.</p>
+
+                    <h4 class="hdmb-section-title">ĐIỀU 8: CAM KẾT CHUNG</h4>
+                    <p>8.1 Hai Bên cam kết thực hiện đúng những điều ghi trên Hợp Đồng này. Mọi sự thay đổi trong Hợp Đồng này phải lập phụ lục hợp đồng và phải có chữ ký xác nhận của cả Hai Bên. Nếu một trong Hai Bên cố ý vi phạm các điều khoản của Hợp Đồng này sẽ phải chịu trách nhiệm về các hành vi vi phạm đó.</p>
+                    <p>8.2 Trong trường hợp xảy ra tranh chấp, hai bên cố gắng cùng nhau bàn bạc các biện pháp giải quyết trên tinh thần hòa giải, có thiện chí và hợp tác. Nếu vẫn không thể thống nhất cách giải quyết thì hai bên sẽ đưa vụ việc ra Tòa án có thẩm quyền giải quyết, toàn bộ chi phí xét xử do bên thua chịu.</p>
+                    <p>8.3 Hợp đồng này được lập thành 02 (hai) bản, mỗi bên giữ 01 (một) bản có giá trị pháp lý như nhau.</p>
+                  </div>
+
+                  <!-- KHU VỰC CHỮ KÝ 2 BÊN CHUẨN MẪU HỢP ĐỒNG -->
+                  <div class="hdmb-signatures-grid">
+                    <div class="hdmb-sig-col">
+                      <p class="bold" style="font-size: 11pt; margin-bottom: 24px;">Đại Diện Bên A</p>
+                      <p>Bởi: <strong id="hdmb-pv-sign-by-a">CHI NHÁNH PHÍA NAM - TỔNG CÔNG TY XÂY DỰNG TRƯỜNG SƠN</strong></p>
+                      <p>Tên: <strong id="hdmb-pv-sign-name-a">VÕ THANH PHONG</strong></p>
+                      <p>Chức vụ: <strong id="hdmb-pv-sign-pos-a">GIÁM ĐỐC</strong></p>
+                    </div>
+                    <div class="hdmb-sig-col">
+                      <p class="bold" style="font-size: 11pt; margin-bottom: 24px;">Đại Diện Bên B</p>
+                      <p>Bởi: <strong id="hdmb-pv-sign-by-b">CÔNG TY CỔ PHẦN ĐẦU TƯ ĐIỆN MÁY XANH</strong></p>
+                      <p>Tên: <strong id="hdmb-pv-sign-name-b">LÊ THUỴ SƠN CA</strong></p>
+                      <p>Chức vụ: <strong id="hdmb-pv-sign-pos-b">GIÁM ĐỐC BÁN HÀNG</strong></p>
+                    </div>
+                  </div>
+                </div>
+
+                <footer class="hdmb-footer-bar">
+                  <span>Pháp Chế_111124_TGDD_VN</span>
+                  <span>3</span>
+                </footer>
+              </article>
+
+              <!-- TRANG 4: TRANG TIẾP THEO THEO MẪU PHÁP CHẾ -->
+              <article class="a4-page hdmb-page" id="hdmb-page-4">
+                <div class="template-bg-overlay" id="template-bg-overlay-hdmb-4"></div>
+                <div class="page-content">
+                  <div class="hdmb-header-top">
+                    <span class="muted-doc-code">Pháp Chế_111124_TGDD_VN</span>
+                    <span class="muted-page-num">4</span>
+                  </div>
+                  <div style="flex: 1;"></div>
+                </div>
+                <footer class="hdmb-footer-bar">
+                  <span>Pháp Chế_111124_TGDD_VN</span>
+                  <span>4</span>
+                </footer>
+              </article>
+            </div>
 
           </div>
         </main>
