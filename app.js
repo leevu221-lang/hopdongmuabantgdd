@@ -452,8 +452,8 @@ function renderHdmbContract() {
       tr.innerHTML = `
         <td class="text-center bold">${lineNum}</td>
         <td class="bold">${item.name}</td>
-        <td class="text-center">${item.qty || 1}</td>
-        <td class="text-right">${formatCurrency(unitPrice)}</td>
+        <td class="text-center bold">${item.qty || 1}</td>
+        <td class="text-right bold">${formatCurrency(unitPrice)}</td>
         <td class="text-right bold">${formatCurrency(lineTotal)}</td>
       `;
       tbody.appendChild(tr);
@@ -486,7 +486,12 @@ function renderHdmbContract() {
     setElText('hdmb-pv-words', words);
   }
 
-  // Trang 2: Địa điểm giao hàng (Điều 2.2)
+  // Trang 2: Cập nhật thông tin thanh toán & địa điểm giao hàng (Điều 2 & 3)
+  setElText('hdmb-pv-p2-bank-owner', partyB.name ? (partyB.name.toUpperCase().includes('ĐIỆN MÁY XANH') ? 'CÔNG TY CỔ PHẦN ĐẦU TƯ ĐIỆN MÁY XANH' : partyB.name) : 'CÔNG TY CỔ PHẦN ĐẦU TƯ ĐIỆN MÁY XANH');
+  setElText('hdmb-pv-p2-bank-acc', partyB.bankAccount || '1243 666 888');
+  setElText('hdmb-pv-p2-bank-name', partyB.bankName || 'Vietcombank - CN Tân Bình');
+  setElText('hdmb-pv-p2-bank-addr', partyB.bankName ? (partyB.bankName.includes('-') ? partyB.bankName.split('-')[1].trim() : partyB.bankName) : 'CN Tân Bình');
+
   const delivText = appState.deliveryAddress || (document.getElementById('delivery-address') ? document.getElementById('delivery-address').value.trim() : 'Xã Hồ Thị Kỷ, Tỉnh Cà Mau');
   setElText('hdmb-pv-delivery-address', delivText);
 

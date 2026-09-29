@@ -396,6 +396,7 @@ html, body {
   padding: 8px 12px;
   font-size: 12.5px;
   font-family: inherit;
+  font-weight: 600;
   color: var(--text-primary);
   background: #ffffff;
   border: 1px solid #cce1da;
@@ -2057,6 +2058,26 @@ body:not(.doc-type-hdmb) #a4-page-1 {
   margin: 0 0 3px 0 !important;
   text-align: left !important;
   line-height: 1.32 !important;
+  font-weight: bold !important;
+}
+
+/* ==================== MẪU 3: TOÀN BỘ DỮ LIỆU NHẬP VÀO ĐỀU IN ĐẬM ==================== */
+.hdmb-page [id^="hdmb-pv-"],
+.hdmb-parties-table td span,
+.hdmb-parties-table td strong,
+#hdmb-items-tbody td,
+.hdmb-sig-details p,
+.hdmb-sig-details p strong {
+  font-weight: 700 !important;
+}
+
+#hdmb-pv-doc-number,
+#hdmb-pv-day,
+#hdmb-pv-month,
+#hdmb-pv-year,
+#hdmb-pv-words,
+#hdmb-pv-delivery-address {
+  font-weight: 700 !important;
 }
 
 .hdmb-footer-bar {
