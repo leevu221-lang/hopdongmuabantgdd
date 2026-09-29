@@ -611,6 +611,19 @@
             </div>
             <p class="card-hint">Nếu công ty bạn đã có phôi giấy in sẵn dưới dạng <strong>file PDF, file Word (.docx) hoặc hình ảnh</strong>, hãy tải lên đây để hiển thị phôi nền và căn chỉnh chữ in đè chính xác 100%!</p>
             
+            <!-- THANH THỂ HIỆN RÕ MẪU ĐANG ĐƯỢC GẮN PHÔI -->
+            <div class="active-target-badge" style="background:#e8f4f0;border:1px solid #a9d7c9;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+              <div style="font-size:12.5px;color:#1a3e37;">
+                <strong>📍 Phôi này sẽ áp dụng cho:</strong> <span id="lbl-active-template-name" style="font-weight:700;color:#2d6e61;">Mẫu 1 - Biên Bản Nghiệm Thu & Giao Nhận</span>
+              </div>
+              <select id="select-target-template-upload" onchange="changeUploadTargetTemplate(this.value)" class="chip-select" style="font-size:12px;padding:4px 8px;">
+                <option value="bbnt">Mẫu 1: Biên Bản Nghiệm Thu (BBNT)</option>
+                <option value="bbtl">Mẫu 2: Biên Bản Thanh Lý (BBTL)</option>
+                <option value="hdmb">Mẫu 3: Hợp Đồng Mua Bán (HĐMB)</option>
+                <option value="pxk">Mẫu 4: Hóa Đơn / Phiếu Giao Hàng</option>
+              </select>
+            </div>
+
             <div class="upload-dropzone" id="dropzone-bg-template">
               <input type="file" id="file-bg-template" accept="image/*,.pdf,.docx,.doc" onchange="handleBgTemplateUpload(event)">
               <div class="dropzone-content">

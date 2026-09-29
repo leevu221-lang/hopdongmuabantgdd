@@ -60,17 +60,41 @@ const defaultState = {
   signTitleB: 'ĐẠI DIỆN BÊN B',
   footerText: 'Thegioididong.com và dienmayxanh.com',
 
-  // Phôi nền hóa đơn
-  bgTemplateUrl: '',
-  bgOpacity: 0.4,
-  printWithBg: false,
+  // Phôi nền hóa đơn lưu độc lập cho từng mẫu riêng biệt (Mẫu 1, 2, 3, 4 có phôi riêng!)
+  templateOverlays: {
+    bbnt: { bgUrl: '', opacity: 0.4, printWithBg: false },
+    bbtl: { bgUrl: '', opacity: 0.4, printWithBg: false },
+    hdmb: { bgUrl: '', opacity: 0.4, printWithBg: false },
+    pxk:  { bgUrl: '', opacity: 0.4, printWithBg: false }
+  },
   customLogoUrl: ''
 };
 
-// State hiện tại trong phiên làm việc
-let appState = JSON.parse(JSON.stringify(defaultState));
+// Khôi phục State từ LocalStorage nếu có để duy trì dữ liệu khi F5 hoặc mở lại
+function getInitialState() {
+  try {
+    const saved = localStorage.getItem('saved_contract_state_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return Object.assign({}, defaultState, parsed);
+    }
+  } catch (e) {
+    console.warn('Lỗi đọc localStorage:', e);
+  }
+  return JSON.parse(JSON.stringify(defaultState));
+}
+
+let appState = getInitialState();
 let isDirectEditActive = false;
 let currentZoom = 1.0;
+
+function saveStateToLocalStorage() {
+  try {
+    localStorage.setItem('saved_contract_state_v2', JSON.stringify(appState));
+  } catch (e) {
+    console.warn('Không thể lưu localStorage (vượt dung lượng ảnh):', e);
+  }
+}
 
 // ==================== HÀM DỊCH SỐ THÀNH CHỮ TIẾNG VIỆT CHUẨN ====================
 function docSoTienTiengViet(soTien) {
@@ -486,6 +510,8 @@ function selectDocumentType(type) {
     document.getElementById('closing-note-2').value = 'Phiếu giao hàng được lập thành 02 bản, mỗi bên giữ 01 bản.';
   }
 
+  applyBgTemplate();
+  updateTargetTemplateBadge();
   updateDocumentPreview();
   showToast(`Đã chuyển sang: ${pvTitle.textContent}`);
 }
@@ -557,11 +583,9 @@ async function handleBgTemplateUpload(event) {
   // 3. NẾU LÀ HÌNH ẢNH (JPG, PNG, WebP)
   const reader = new FileReader();
   reader.onload = function(e) {
-    appState.bgTemplateUrl = e.target.result;
-    applyBgTemplate();
+    setTemplateForCurrentDocType(e.target.result);
     document.getElementById('pdf-page-selector').style.display = 'none';
-    document.getElementById('bg-options-panel').style.display = 'flex';
-    showToast('Tải lên ảnh phôi mẫu thành công!');
+    showToast(`Đã tải lên ảnh phôi mẫu cho ${getDocTypeName(appState.docType)}!`);
   };
   reader.readAsDataURL(file);
 }
@@ -577,8 +601,7 @@ async function renderPdfPageToTemplate(pageNumber) {
   canvas.height = viewport.height;
   const ctx = canvas.getContext('2d');
   await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-  appState.bgTemplateUrl = canvas.toDataURL('image/png');
-  applyBgTemplate();
+  setTemplateForCurrentDocType(canvas.toDataURL('image/png'));
 }
 
 function changePdfPage(pageNumber) {
@@ -616,8 +639,47 @@ function renderDocxToTemplate(html) {
     y += 34;
   }
 
-  appState.bgTemplateUrl = canvas.toDataURL('image/png');
+  setTemplateForCurrentDocType(canvas.toDataURL('image/png'));
+}
+
+// Lấy tên hiển thị của loại mẫu
+function getDocTypeName(type) {
+  const map = {
+    bbnt: 'Mẫu 1: Biên Bản Nghiệm Thu & Giao Nhận',
+    bbtl: 'Mẫu 2: Biên Bản Thanh Lý Hợp Đồng',
+    hdmb: 'Mẫu 3: Hợp Đồng Mua Bán Hàng Hóa',
+    pxk:  'Mẫu 4: Hóa Đơn / Phiếu Giao Hàng'
+  };
+  return map[type] || type;
+}
+
+// Cập nhật nhãn và dropdown hiển thị mẫu đang cấu hình phôi
+function updateTargetTemplateBadge() {
+  const badge = document.getElementById('lbl-active-template-name');
+  const select = document.getElementById('select-target-template-upload');
+  if (badge) badge.textContent = getDocTypeName(appState.docType);
+  if (select) select.value = appState.docType;
+}
+
+// Chuyển nhanh loại mẫu muốn úp phôi từ dropdown
+function changeUploadTargetTemplate(type) {
+  selectDocumentType(type);
+  showToast(`Đang cấu hình phôi cho: ${getDocTypeName(type)}`);
+}
+
+// Gán phôi nền chính xác cho loại mẫu đang chọn và lưu vào LocalStorage
+function setTemplateForCurrentDocType(dataUrl) {
+  if (!appState.templateOverlays) {
+    appState.templateOverlays = JSON.parse(JSON.stringify(defaultState.templateOverlays));
+  }
+  const prev = appState.templateOverlays[appState.docType] || { opacity: 0.4, printWithBg: false };
+  appState.templateOverlays[appState.docType] = {
+    bgUrl: dataUrl,
+    opacity: prev.opacity || 0.4,
+    printWithBg: prev.printWithBg || false
+  };
   applyBgTemplate();
+  saveStateToLocalStorage();
 }
 
 // ==================== XUẤT FILE WORD (.DOC / .DOCX) ====================
@@ -695,41 +757,75 @@ function exportToWordDocx() {
   showToast('Đã tải xuống file Word (.doc) thành công! Mở và chỉnh sửa trực tiếp trên Microsoft Word.');
 }
 
-// Áp dụng ảnh phôi nền vào khung A4
+// Áp dụng ảnh phôi nền vào khung A4 theo đúng mẫu đang được chọn
 function applyBgTemplate() {
   const overlay = document.getElementById('template-bg-overlay-1');
-  if (appState.bgTemplateUrl) {
-    overlay.style.backgroundImage = `url("${appState.bgTemplateUrl}")`;
-    overlay.style.opacity = appState.bgOpacity;
+  if (!appState.templateOverlays) {
+    appState.templateOverlays = JSON.parse(JSON.stringify(defaultState.templateOverlays));
+  }
+  const currentTpl = appState.templateOverlays[appState.docType] || { bgUrl: '', opacity: 0.4, printWithBg: false };
+  const panel = document.getElementById('bg-options-panel');
+
+  if (currentTpl.bgUrl) {
+    overlay.style.backgroundImage = `url("${currentTpl.bgUrl}")`;
+    overlay.style.opacity = currentTpl.opacity;
+    if (panel) panel.style.display = 'flex';
+    const slider = document.getElementById('bg-opacity-slider');
+    const lbl = document.getElementById('lbl-opacity');
+    const chk = document.getElementById('chk-print-bg');
+    if (slider) slider.value = Math.round(currentTpl.opacity * 100);
+    if (lbl) lbl.textContent = `${Math.round(currentTpl.opacity * 100)}%`;
+    if (chk) chk.checked = !!currentTpl.printWithBg;
+
+    if (currentTpl.printWithBg) {
+      document.documentElement.style.setProperty('--print-bg-display', 'block');
+    } else {
+      document.documentElement.style.setProperty('--print-bg-display', 'none');
+    }
   } else {
     overlay.style.backgroundImage = 'none';
+    if (panel) panel.style.display = 'none';
   }
+  updateTargetTemplateBadge();
 }
 
-// Thay đổi độ mờ phôi
+// Thay đổi độ mờ phôi của mẫu hiện tại
 function changeBgOpacity(val) {
-  appState.bgOpacity = val / 100;
-  document.getElementById('lbl-opacity').textContent = `${val}%`;
-  applyBgTemplate();
+  if (!appState.templateOverlays) return;
+  const currentTpl = appState.templateOverlays[appState.docType];
+  if (currentTpl) {
+    currentTpl.opacity = val / 100;
+    const lbl = document.getElementById('lbl-opacity');
+    if (lbl) lbl.textContent = `${val}%`;
+    const overlay = document.getElementById('template-bg-overlay-1');
+    if (overlay) overlay.style.opacity = currentTpl.opacity;
+    saveStateToLocalStorage();
+  }
 }
 
 // Cho phép in luôn phôi nền khi in giấy trắng
 function togglePrintBackground() {
-  appState.printWithBg = document.getElementById('chk-print-bg').checked;
-  if (appState.printWithBg) {
-    document.documentElement.style.setProperty('--print-bg-display', 'block');
-  } else {
-    document.documentElement.style.setProperty('--print-bg-display', 'none');
+  if (!appState.templateOverlays) return;
+  const currentTpl = appState.templateOverlays[appState.docType];
+  if (currentTpl) {
+    currentTpl.printWithBg = document.getElementById('chk-print-bg').checked;
+    if (currentTpl.printWithBg) {
+      document.documentElement.style.setProperty('--print-bg-display', 'block');
+    } else {
+      document.documentElement.style.setProperty('--print-bg-display', 'none');
+    }
+    saveStateToLocalStorage();
   }
 }
 
-// Xóa phôi nền
+// Xóa phôi nền của mẫu hiện tại
 function removeBgTemplate() {
-  appState.bgTemplateUrl = '';
+  if (!appState.templateOverlays) return;
+  appState.templateOverlays[appState.docType] = { bgUrl: '', opacity: 0.4, printWithBg: false };
   applyBgTemplate();
   document.getElementById('file-bg-template').value = '';
-  document.getElementById('bg-options-panel').style.display = 'none';
-  showToast('Đã gỡ bỏ phôi nền.');
+  saveStateToLocalStorage();
+  showToast(`Đã gỡ bỏ phôi nền của ${getDocTypeName(appState.docType)}`);
 }
 
 // Tải lên logo công ty
@@ -1027,8 +1123,11 @@ function showToast(msg) {
 
 // ==================== KHỞI CHẠY KHI TẢI TRANG ====================
 document.addEventListener('DOMContentLoaded', () => {
+  populateFormFromState();
   renderProductInputs();
   updateDocumentPreview();
+  applyBgTemplate();
+  updateTargetTemplateBadge();
   loadCustomerPresetDropdown();
   setZoom(1.0);
 });
