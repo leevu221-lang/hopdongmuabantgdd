@@ -1475,14 +1475,33 @@ html, body {
 }
 
 /* ===================================================================
+   CHẾ ĐỘ HIỂN THỊ MÀN HÌNH THEO MẪU ĐƯỢC CHỌN
+   =================================================================== */
+body.doc-type-hdmb #a4-page-1 {
+  display: none !important;
+}
+body.doc-type-hdmb #a4-pages-hdmb {
+  display: flex !important;
+}
+
+body:not(.doc-type-hdmb) #a4-pages-hdmb {
+  display: none !important;
+}
+body:not(.doc-type-hdmb) #a4-page-1 {
+  display: flex !important;
+}
+
+/* ===================================================================
    CẤU HÌNH IN ẤN CHUẨN A4 (@media print)
    Khi nhấn In, toàn bộ các thành phần Web UI sẽ ẩn hoàn toàn.
-   Chỉ còn lại đúng mặt giấy khổ A4 210mm x 297mm sắc nét.
+   Nội dung không bị giới hạn bởi overflow/height của màn hình,
+   Đảm bảo hộp thoại in của trình duyệt (Bản xem trước khi in)
+   hiển thị đầy đủ, sắc nét, ngắt trang chính xác 100%.
    =================================================================== */
 
 @page {
   size: A4 portrait;
-  margin: 0 !important; /* Margin 0 triệt tiêu hoàn toàn header (ngày giờ, tiêu đề) và footer (link web URL) mặc định của trình duyệt */
+  margin: 0 !important; /* Triệt tiêu header/footer link URL mặc định của trình duyệt */
 }
 
 @media print {
@@ -1493,31 +1512,83 @@ html, body {
   .preview-control-bar,
   .toast-popup,
   .header-actions,
-  .print-guide-banner {
+  .print-guide-banner,
+  .template-quick-bar,
+  #bg-options-panel,
+  #pane-template,
+  #pane-github {
     display: none !important;
   }
 
+  /* Reset toàn bộ kích thước, layout và triệt tiêu overflow: hidden để trình duyệt phân trang chuẩn */
   html, body {
     background: #ffffff !important;
     color: #000000 !important;
-    width: 210mm !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
     margin: 0 !important;
     padding: 0 !important;
-    font-size: 11.5pt !important;
+    font-size: 11pt !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
   .app-main,
+  #pane-editor,
   .workspace-grid,
   .preview-area,
   .a4-stage {
     display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 210mm !important;
     background: transparent !important;
     transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Quản lý hiển thị chính xác theo loại mẫu khi in */
+  body.doc-type-hdmb #a4-page-1 {
+    display: none !important;
+  }
+  body.doc-type-hdmb #a4-pages-hdmb {
+    display: block !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body.doc-type-hdmb #a4-pages-hdmb .hdmb-page {
+    display: flex !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin: 0 auto !important;
+  }
+  body.doc-type-hdmb #a4-pages-hdmb .hdmb-page:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  body:not(.doc-type-hdmb) #a4-pages-hdmb {
+    display: none !important;
+  }
+  body:not(.doc-type-hdmb) #a4-page-1 {
+    display: flex !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin: 0 auto !important;
   }
 
   .a4-page {
@@ -1526,15 +1597,13 @@ html, body {
     margin: 0 auto !important;
     padding: 12mm 15mm 16mm 20mm !important;
     width: 210mm !important;
-    height: 297mm !important;
-    min-height: 297mm !important;
+    min-height: 296mm !important;
+    max-height: 297mm !important;
     box-sizing: border-box !important;
-    page-break-after: always !important;
-    break-after: page !important;
     position: relative !important;
-    display: flex !important;
     flex-direction: column !important;
     justify-content: flex-start !important;
+    background: #ffffff !important;
   }
 
   .page-content {
@@ -1549,21 +1618,21 @@ html, body {
   }
 
   /* Đảm bảo bảng in sắc nét và ngắt trang chuẩn */
-  .print-items-table {
+  .print-items-table, .hdmb-items-table, .hdmb-parties-table {
     page-break-inside: auto;
   }
 
-  .print-items-table tr {
+  .print-items-table tr, .hdmb-items-table tr, .hdmb-parties-table tr {
     page-break-inside: avoid;
     page-break-after: auto;
   }
 
-  .signatures-block {
+  .signatures-block, .hdmb-signatures-grid {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 
-  /* Chân trang in sắc nét, ghim cố định ở đáy trang A4 chuẩn theo Hình 2 */
+  /* Chân trang in sắc nét, ghim cố định ở đáy trang A4 */
   .a4-footer {
     position: absolute !important;
     bottom: 8mm !important;
@@ -1580,21 +1649,36 @@ html, body {
     z-index: 99 !important;
   }
 
+  .hdmb-footer-bar {
+    position: absolute !important;
+    bottom: 8mm !important;
+    left: 20mm !important;
+    right: 15mm !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 9.5pt !important;
+    font-family: 'Times New Roman', serif !important;
+    border-top: 1px solid #000000 !important;
+    padding-top: 3px !important;
+    background: #ffffff !important;
+    z-index: 99 !important;
+  }
+
   /* Kiểm soát phôi nền khi in */
   .template-bg-overlay {
     display: var(--print-bg-display, none) !important;
   }
 
-  /* Khi ở chế độ Thay Thế Hoàn Toàn lúc In */
-  .a4-page.mode-replace-only {
+  /* Khi ở chế độ Thay Thế Hoàn Toàn lúc In (Mẫu 1, 2, 4) */
+  .a4-page.mode-replace-only:not(.hdmb-page) {
     padding: 0 !important;
     margin: 0 !important;
   }
-  .a4-page.mode-replace-only .page-content,
-  .a4-page.mode-replace-only .a4-footer {
+  .a4-page.mode-replace-only:not(.hdmb-page) .page-content,
+  .a4-page.mode-replace-only:not(.hdmb-page) .a4-footer {
     display: none !important;
   }
-  .a4-page.mode-replace-only .template-bg-overlay {
+  .a4-page.mode-replace-only:not(.hdmb-page) .template-bg-overlay {
     display: block !important;
     opacity: 1 !important;
     -webkit-print-color-adjust: exact !important;
@@ -1948,15 +2032,31 @@ html, body {
 .hdmb-signatures-grid {
   display: flex;
   justify-content: space-between;
-  margin-top: 18px;
-  padding: 0 10px;
+  margin-top: 24px;
+  padding: 0 8px;
 }
 
 .hdmb-sig-col {
   width: 48%;
-  text-align: left;
-  line-height: 1.45;
   font-size: 10.5pt;
+  line-height: 1.35;
+}
+
+.hdmb-sig-title {
+  font-size: 11pt;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+}
+
+.hdmb-sig-space {
+  height: 85px; /* Khoảng trống ký tên & đóng dấu mộc đỏ chuẩn như Hình 1 */
+}
+
+.hdmb-sig-details p {
+  margin: 0 0 3px 0 !important;
+  text-align: left !important;
+  line-height: 1.32 !important;
 }
 
 .hdmb-footer-bar {
@@ -1999,22 +2099,13 @@ html, body {
   border-color: #fda4af;
 }
 
-@media print {
-  .multipage-contract {
-    display: block !important;
-    gap: 0 !important;
-  }
-  .multipage-contract .a4-page {
-    page-break-after: always !important;
-    break-after: page !important;
-    margin: 0 auto !important;
-    display: flex !important;
-    box-shadow: none !important;
-  }
-  .multipage-contract .a4-page:last-child {
-    page-break-after: avoid !important;
-    break-after: avoid !important;
-  }
+/* Đảm bảo nội dung trang HĐMB luôn hiển thị rõ ràng trên màn hình */
+.hdmb-page .page-content {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  flex: 1 !important;
 }
+
 
 

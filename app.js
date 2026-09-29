@@ -490,17 +490,34 @@ function renderHdmbContract() {
   const delivText = appState.deliveryAddress || (document.getElementById('delivery-address') ? document.getElementById('delivery-address').value.trim() : 'Xã Hồ Thị Kỷ, Tỉnh Cà Mau');
   setElText('hdmb-pv-delivery-address', delivText);
 
-  // Trang 3: Chữ ký 2 bên
-  setElText('hdmb-pv-sign-by-a', partyA.name || '');
-  setElText('hdmb-pv-sign-name-a', cleanSignName(partyA.rep));
-  setElText('hdmb-pv-sign-pos-a', (partyA.position || '').toUpperCase());
+  // Trang 3: Chữ ký 2 bên (Khớp chuẩn 100% Hình 1 file gốc)
+  const elSignByA = document.getElementById('hdmb-pv-sign-by-a');
+  if (elSignByA) {
+    let nameA = (partyA.name || '').trim();
+    if (!nameA || nameA.includes('TRƯỜNG SƠN')) {
+      elSignByA.innerHTML = 'CHI NHÁNH PHÍA NAM - TỔNG CÔNG<br>TY XÂY DỰNG TRƯỜNG SƠN';
+    } else {
+      elSignByA.textContent = nameA;
+    }
+  }
+  setElText('hdmb-pv-sign-name-a', cleanSignName(partyA.rep) || 'VÕ THANH PHONG');
+  setElText('hdmb-pv-sign-pos-a', (partyA.position || 'GIÁM ĐỐC').toUpperCase());
 
-  setElText('hdmb-pv-sign-by-b', partyB.name || '');
-  setElText('hdmb-pv-sign-name-b', cleanSignName(partyB.rep));
+  const elSignByB = document.getElementById('hdmb-pv-sign-by-b');
+  if (elSignByB) {
+    let nameB = (partyB.name || '').trim();
+    // Khớp chuẩn Hình 1 file gốc: Bên B luôn ký là CÔNG TY CỔ PHẦN ĐẦU TƯ ĐIỆN MÁY XANH (không có từ CHI NHÁNH)
+    if (!nameB || nameB.toUpperCase().includes('ĐIỆN MÁY XANH') || nameB.toUpperCase().includes('ĐẦU TƯ')) {
+      elSignByB.innerHTML = 'CÔNG TY CỔ PHẦN ĐẦU TƯ ĐIỆN<br>MÁY XANH';
+    } else {
+      elSignByB.textContent = nameB;
+    }
+  }
+  setElText('hdmb-pv-sign-name-b', cleanSignName(partyB.rep) || 'LÊ THUỴ SƠN CA');
   
-  // Vị trí chức vụ bên B ở chữ ký
+  // Vị trí chức vụ bên B ở chữ ký: Chuẩn Hình 1 là "GIÁM ĐỐC BÁN HÀNG"
   let posB = partyB.position || '';
-  if (posB.toLowerCase().includes('giám đốc bán hàng')) {
+  if (posB.toLowerCase().includes('giám đốc bán hàng') || !posB) {
     posB = 'GIÁM ĐỐC BÁN HÀNG';
   } else {
     posB = posB.toUpperCase();
@@ -687,6 +704,10 @@ function renderGoodsTable() {
 // ==================== CHUYỂN ĐỔI MẪU VĂN BẢN (TEMPLATES) ====================
 function selectDocumentType(type) {
   appState.docType = type;
+
+  // Cập nhật class trên body để đồng bộ hiển thị và in ấn chính xác 100%
+  document.body.classList.remove('doc-type-bbnt', 'doc-type-bbtl', 'doc-type-hdmb', 'doc-type-pxk');
+  document.body.classList.add(`doc-type-${type}`);
 
   // Cập nhật trạng thái nút chọn mẫu
   document.querySelectorAll('.tpl-btn').forEach(btn => {
@@ -1683,6 +1704,18 @@ function printDocument() {
   const wasEditing = isDirectEditActive;
   if (wasEditing) toggleDirectEdit();
 
+  // Đảm bảo body có class đúng theo mẫu đang chọn
+  document.body.classList.remove('doc-type-bbnt', 'doc-type-bbtl', 'doc-type-hdmb', 'doc-type-pxk');
+  document.body.classList.add(`doc-type-${appState.docType || 'bbnt'}`);
+
+  // Chuyển về tab chính nếu đang ở tab cấu hình phôi hoặc github
+  switchMainTab('editor');
+
+  // Tạm thời reset zoom về scale 1.0 trước khi in
+  const stage = document.getElementById('a4-stage');
+  const prevTransform = stage ? stage.style.transform : '';
+  if (stage) stage.style.transform = 'none';
+
   // Tạm thời xóa title trình duyệt để khi in không bị dính tiêu đề web ở đầu trang
   const originalTitle = document.title;
   document.title = ' ';
@@ -1692,9 +1725,26 @@ function printDocument() {
 
   setTimeout(() => {
     document.title = originalTitle;
+    if (stage && prevTransform) stage.style.transform = prevTransform;
     if (wasEditing) toggleDirectEdit();
   }, 1000);
 }
+
+// Bắt sự kiện trước & sau khi in của trình duyệt để đảm bảo luôn hiển thị đầy đủ
+window.addEventListener('beforeprint', () => {
+  document.body.classList.remove('doc-type-bbnt', 'doc-type-bbtl', 'doc-type-hdmb', 'doc-type-pxk');
+  document.body.classList.add(`doc-type-${appState.docType || 'bbnt'}`);
+  const stage = document.getElementById('a4-stage');
+  if (stage) stage.style.transform = 'none';
+});
+
+window.addEventListener('afterprint', () => {
+  const stage = document.getElementById('a4-stage');
+  if (stage && currentZoom) {
+    if (currentZoom === 'auto') setZoom('auto');
+    else stage.style.transform = `scale(${currentZoom})`;
+  }
+});
 
 // Phím tắt bàn phím (Ctrl+P / Cmd+P)
 window.addEventListener('keydown', function(e) {
