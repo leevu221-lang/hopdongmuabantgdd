@@ -221,13 +221,26 @@ function renderPreview() {
   document.getElementById('pv-row-auth').style.display = appState.partyB.auth ? '' : 'none';
 
   // Lời kết & Chữ ký
-  document.getElementById('pv-closing-note-1').textContent = appState.closingNote1;
-  document.getElementById('pv-closing-note-2').textContent = appState.closingNote2;
+  const pvClosing1 = document.getElementById('pv-closing-note-1');
+  const pvClosing2 = document.getElementById('pv-closing-note-2');
+  if (pvClosing1) {
+    pvClosing1.textContent = appState.closingNote1;
+    pvClosing1.style.display = appState.closingNote1 ? '' : 'none';
+  }
+  if (pvClosing2) {
+    pvClosing2.textContent = appState.closingNote2;
+    pvClosing2.style.display = appState.closingNote2 ? '' : 'none';
+  }
   document.getElementById('pv-sign-title-a').textContent = appState.signTitleA;
   document.getElementById('pv-sign-title-b').textContent = appState.signTitleB;
   document.getElementById('pv-sign-name-a').textContent = cleanSignName(appState.partyA.rep);
   document.getElementById('pv-sign-name-b').textContent = cleanSignName(appState.partyB.rep);
-  document.getElementById('pv-footer-text').textContent = appState.footerText;
+  
+  // Đồng bộ nội dung chân trang (Footer) hiển thị đúng như Hình 2
+  const pvFooter = document.getElementById('pv-footer-text');
+  if (pvFooter) {
+    pvFooter.textContent = appState.footerText || 'Thegioididong.com và dienmayxanh.com';
+  }
 
   // Render bảng hàng hóa & tính tổng tiền
   renderGoodsTable();
@@ -440,6 +453,7 @@ function selectDocumentType(type) {
     secBbtl.style.display = 'none';
     secHdmb.style.display = 'none';
     document.getElementById('closing-note-1').value = 'Hai bên xác nhận số hàng hóa, sản phẩm trên đã được giao nhận đầy đủ và đúng theo yêu cầu và sẽ lập biên bản thanh lý hợp đồng này sau khi biên bản giao nhận được lập.';
+    document.getElementById('closing-note-2').value = 'Biên bản được làm thành 2 bản, có giá trị như nhau. Mỗi bên giữ 1 bản.';
   } else if (type === 'bbtl') {
     // Mẫu 2: BIÊN BẢN THANH LÝ HỢP ĐỒNG
     pvTitle.textContent = 'BIÊN BẢN THANH LÝ HỢP ĐỒNG';
@@ -449,6 +463,7 @@ function selectDocumentType(type) {
     secBbtl.style.display = 'block';
     secHdmb.style.display = 'none';
     document.getElementById('closing-note-1').value = 'Thanh lý hợp đồng này được làm thành 2 bản, có giá trị như nhau. Mỗi bên giữ 1 bản.';
+    document.getElementById('closing-note-2').value = '';
   } else if (type === 'hdmb') {
     // Mẫu 3: HỢP ĐỒNG MUA BÁN HÀNG HÓA
     pvTitle.textContent = 'HỢP ĐỒNG MUA BÁN HÀNG HÓA';
@@ -458,6 +473,7 @@ function selectDocumentType(type) {
     secBbtl.style.display = 'none';
     secHdmb.style.display = 'none';
     document.getElementById('closing-note-1').value = 'Hợp đồng được lập thành 02 (hai) bản có giá trị pháp lý như nhau, mỗi bên giữ 01 bản.';
+    document.getElementById('closing-note-2').value = '';
   } else if (type === 'pxk') {
     // Mẫu 4: HÓA ĐƠN BÁN HÀNG / PHIẾU XUẤT KHO
     pvTitle.textContent = 'HÓA ĐƠN BÁN HÀNG KIÊM PHIẾU GIAO HÀNG';
@@ -467,6 +483,7 @@ function selectDocumentType(type) {
     secBbtl.style.display = 'none';
     secHdmb.style.display = 'none';
     document.getElementById('closing-note-1').value = 'Quý khách vui lòng kiểm tra kỹ số lượng, bao bì và quy cách hàng hóa trước khi ký nhận.';
+    document.getElementById('closing-note-2').value = 'Phiếu giao hàng được lập thành 02 bản, mỗi bên giữ 01 bản.';
   }
 
   updateDocumentPreview();
@@ -766,10 +783,17 @@ function printDocument() {
   const wasEditing = isDirectEditActive;
   if (wasEditing) toggleDirectEdit();
 
+  // Tạm thời xóa title trình duyệt để khi in không bị dính tiêu đề web ở đầu trang
+  const originalTitle = document.title;
+  document.title = ' ';
+
   // Gọi lệnh in của trình duyệt
   window.print();
 
-  if (wasEditing) toggleDirectEdit();
+  setTimeout(() => {
+    document.title = originalTitle;
+    if (wasEditing) toggleDirectEdit();
+  }, 1000);
 }
 
 // Phím tắt bàn phím (Ctrl+P / Cmd+P)
