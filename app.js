@@ -62,10 +62,10 @@ const defaultState = {
 
   // Phôi nền hóa đơn lưu độc lập cho từng mẫu riêng biệt (Mẫu 1, 2, 3, 4 có phôi riêng!)
   templateOverlays: {
-    bbnt: { bgUrl: '', opacity: 0.4, printWithBg: false },
-    bbtl: { bgUrl: '', opacity: 0.4, printWithBg: false },
-    hdmb: { bgUrl: '', opacity: 0.4, printWithBg: false },
-    pxk:  { bgUrl: '', opacity: 0.4, printWithBg: false }
+    bbnt: { bgUrl: '', opacity: 1.0, printWithBg: true, replaceMode: 'replace_pure', hideDefaultText: false },
+    bbtl: { bgUrl: '', opacity: 1.0, printWithBg: true, replaceMode: 'replace_pure', hideDefaultText: false },
+    hdmb: { bgUrl: '', opacity: 1.0, printWithBg: true, replaceMode: 'replace_pure', hideDefaultText: false },
+    pxk:  { bgUrl: '', opacity: 1.0, printWithBg: true, replaceMode: 'replace_pure', hideDefaultText: false }
   },
   customLogoUrl: ''
 };
@@ -76,7 +76,22 @@ function getInitialState() {
     const saved = localStorage.getItem('saved_contract_state_v2');
     if (saved) {
       const parsed = JSON.parse(saved);
-      return Object.assign({}, defaultState, parsed);
+      const merged = Object.assign({}, defaultState, parsed);
+      if (merged.templateOverlays) {
+        for (let key in defaultState.templateOverlays) {
+          if (!merged.templateOverlays[key]) {
+            merged.templateOverlays[key] = Object.assign({}, defaultState.templateOverlays[key]);
+          } else {
+            // Tự động kích hoạt cơ chế thay thế tránh chồng chữ nếu người dùng đã tải mẫu lên trước đó
+            if (merged.templateOverlays[key].bgUrl && !merged.templateOverlays[key].replaceMode) {
+              merged.templateOverlays[key].replaceMode = 'replace_pure';
+              merged.templateOverlays[key].hideDefaultText = true;
+              merged.templateOverlays[key].opacity = 1.0;
+            }
+          }
+        }
+      }
+      return merged;
     }
   } catch (e) {
     console.warn('Lỗi đọc localStorage:', e);
@@ -520,6 +535,232 @@ function selectDocumentType(type) {
 
 let loadedPdfDocument = null;
 
+// ==================== CƠ CHẾ THAY THẾ MẪU & BÓC TÁCH DỮ LIỆU TỰ ĐỘNG ====================
+
+// Bóc tách thông tin từ văn bản hợp đồng / biên bản tiếng Việt
+function parseVietnameseContractData(rawText) {
+  const result = {};
+  if (!rawText) return result;
+  
+  const text = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  // 1. Tên Bên A (Bên Mua)
+  const partyAMatch = text.match(/BÊN\s+(?:MUA\s+)?\(?BÊN\s+A\)?\s*[:\-\.]\s*([^\n\r]+)/i);
+  if (partyAMatch && partyAMatch[1]) {
+    result.partyAName = partyAMatch[1].replace(/^[:\-\.\s]+/, '').trim();
+  }
+
+  // 2. Mã số thuế
+  const taxMatch = text.match(/(?:Mã\s*số\s*thuế|MST)\s*[:\-\.]\s*([0-9]{10}(?:-[0-9]{3})?)/i);
+  if (taxMatch && taxMatch[1]) {
+    result.partyATax = taxMatch[1].trim();
+  }
+
+  // 3. Trụ sở / Địa chỉ
+  const addressMatch = text.match(/(?:Trụ\s*sở(?:\s*đăng\s*ký)?|Địa\s*chỉ)\s*[:\-\.]\s*([^\n\r]+)/i);
+  if (addressMatch && addressMatch[1]) {
+    result.partyAAddress = addressMatch[1].replace(/^[:\-\.\s]+/, '').trim();
+  }
+
+  // 4. Số tài khoản
+  const bankAccMatch = text.match(/(?:Số\s*tài\s*khoản|STK)\s*[:\-\.]\s*([0-9A-Za-z\s]+?)(?=\s*(?:Tại|Ngân|Đại|\n|$))/i);
+  if (bankAccMatch && bankAccMatch[1]) {
+    result.partyABankAccount = bankAccMatch[1].replace(/[^0-9]/g, '').trim();
+  }
+
+  // 5. Ngân hàng
+  const bankNameMatch = text.match(/(?:Tại\s*ngân\s*hàng|Ngân\s*hàng)\s*[:\-\.]\s*([^\n\r]+)/i);
+  if (bankNameMatch && bankNameMatch[1]) {
+    result.partyABankName = bankNameMatch[1].replace(/^[:\-\.\s]+/, '').trim();
+  }
+
+  // 6. Đại diện
+  const repMatch = text.match(/(?:Đại\s*diện\s*(?:bởi)?|Người\s*đại\s*diện)\s*[:\-\.]\s*([^\n\r\-\:]+?)(?=\s*(?:Chức\s*vụ|\-|\n|$))/i);
+  if (repMatch && repMatch[1]) {
+    result.partyARep = repMatch[1].replace(/^[:\-\.\s]+/, '').trim();
+  }
+
+  // 7. Chức vụ
+  const posMatch = text.match(/Chức\s*vụ\s*[:\-\.]\s*([^\n\r]+)/i);
+  if (posMatch && posMatch[1]) {
+    result.partyAPosition = posMatch[1].replace(/^[:\-\.\s]+/, '').trim();
+  }
+
+  // 8. Số hợp đồng / văn bản
+  const docMatch = text.match(/(?:Số|Hợp\s*đồng\s*số|Số\/No\.)\s*[:\-\.]\s*([A-Za-z0-9\/\-_\s]+?)(?=\s*(?:Căn|Hôm|\n|$))/i);
+  if (docMatch && docMatch[1]) {
+    const code = docMatch[1].trim();
+    if (code.includes('/') || code.includes('KD-TGDD') || code.includes('BBNT') || code.includes('HĐMB')) {
+      result.docCode = code;
+    }
+  }
+
+  return result;
+}
+
+// Trích xuất text từ trang PDF bằng pdf.js
+async function extractDataFromPdfPage(pageNumber = 1) {
+  if (!loadedPdfDocument) return null;
+  try {
+    const page = await loadedPdfDocument.getPage(parseInt(pageNumber));
+    const textContent = await page.getTextContent();
+    let rawText = '';
+    let lastY = null;
+    for (const item of textContent.items) {
+      if (lastY !== null && Math.abs(item.transform[5] - lastY) > 5) {
+        rawText += '\n';
+      } else {
+        rawText += ' ';
+      }
+      rawText += item.str;
+      lastY = item.transform[5];
+    }
+    const parsed = parseVietnameseContractData(rawText);
+    window.lastExtractedData = parsed;
+    return parsed;
+  } catch (err) {
+    console.error('Lỗi trích xuất văn bản từ PDF:', err);
+    return null;
+  }
+}
+
+// Áp dụng dữ liệu trích xuất thay thế sạch sẽ vào Form
+function applyExtractedDataToForm(data, showToastMsg = true) {
+  if (!data) return;
+  let count = 0;
+
+  if (data.partyAName) {
+    appState.partyA.name = data.partyAName;
+    const el = document.getElementById('party-a-name');
+    if (el) el.value = data.partyAName;
+    count++;
+  }
+  if (data.partyATax) {
+    appState.partyA.tax = data.partyATax;
+    const el = document.getElementById('party-a-tax');
+    if (el) el.value = data.partyATax;
+    count++;
+  }
+  if (data.partyAAddress) {
+    appState.partyA.address = data.partyAAddress;
+    const el = document.getElementById('party-a-address');
+    if (el) el.value = data.partyAAddress;
+    count++;
+  }
+  if (data.partyABankAccount) {
+    appState.partyA.bankAccount = data.partyABankAccount;
+    const el = document.getElementById('party-a-bank-account');
+    if (el) el.value = data.partyABankAccount;
+    count++;
+  }
+  if (data.partyABankName) {
+    appState.partyA.bankName = data.partyABankName;
+    const el = document.getElementById('party-a-bank-name');
+    if (el) el.value = data.partyABankName;
+    count++;
+  }
+  if (data.partyARep) {
+    appState.partyA.rep = data.partyARep;
+    const el = document.getElementById('party-a-rep');
+    if (el) el.value = data.partyARep;
+    count++;
+  }
+  if (data.partyAPosition) {
+    appState.partyA.position = data.partyAPosition;
+    const el = document.getElementById('party-a-position');
+    if (el) el.value = data.partyAPosition;
+    count++;
+  }
+  if (data.docCode) {
+    appState.docNumber = data.docCode;
+    const elDoc = document.getElementById('doc-number');
+    if (elDoc) elDoc.value = data.docCode;
+    appState.contractNumber = data.docCode;
+    const elContract = document.getElementById('contract-number');
+    if (elContract) elContract.value = data.docCode;
+    count++;
+  }
+
+  updateDocumentPreview();
+  saveStateToLocalStorage();
+
+  if (showToastMsg) {
+    showToast(`🎉 Đã tự động thay thế ${count} thông tin Bên A (${data.partyAName || 'Mới'}) vào Form!`);
+  }
+}
+
+// Bấm nút quét & điền dữ liệu tự động
+async function triggerAutoExtractFromDoc(e) {
+  if (e) e.stopPropagation();
+
+  if (loadedPdfDocument) {
+    const select = document.getElementById('select-pdf-page');
+    const currentPage = select ? parseInt(select.value) || 1 : 1;
+    showToast('Đang quét thông tin từ file PDF...');
+    const data = await extractDataFromPdfPage(currentPage);
+    if (data && (data.partyAName || data.partyATax || data.partyAAddress)) {
+      applyExtractedDataToForm(data, true);
+      setTemplateMode('extract_form');
+      return;
+    }
+  }
+
+  if (window.lastExtractedData && (window.lastExtractedData.partyAName || window.lastExtractedData.partyATax)) {
+    applyExtractedDataToForm(window.lastExtractedData, true);
+    setTemplateMode('extract_form');
+    return;
+  }
+
+  showToast('Không quét được thông tin tự động từ file này. Bạn có thể nhập trực tiếp vào form.');
+}
+
+// Chuyển đổi 1 trong 3 cơ chế thay thế
+function setTemplateMode(mode) {
+  if (!appState.templateOverlays) {
+    appState.templateOverlays = JSON.parse(JSON.stringify(defaultState.templateOverlays));
+  }
+  const currentTpl = appState.templateOverlays[appState.docType];
+  if (!currentTpl) return;
+
+  currentTpl.replaceMode = mode;
+
+  if (mode === 'replace_pure') {
+    currentTpl.hideDefaultText = true;
+    currentTpl.opacity = 1.0;
+    currentTpl.printWithBg = true;
+    showToast('Đã chọn: Thay Thế Hoàn Toàn (Chữ mẫu cũ đã được ẩn sạch, hiển thị 100% mẫu mới, không bị chồng chữ)!');
+  } else if (mode === 'extract_form') {
+    currentTpl.hideDefaultText = false;
+    currentTpl.opacity = 0.15;
+    currentTpl.printWithBg = false;
+    showToast('Đã chọn: Trích Xuất Dữ Liệu Thay Thế Vào Form!');
+  } else if (mode === 'overlay_print') {
+    currentTpl.hideDefaultText = false;
+    currentTpl.opacity = (currentTpl.opacity && currentTpl.opacity < 0.9) ? currentTpl.opacity : 0.4;
+    showToast('Đã chọn: Phôi Nền Căn Chỉnh In Đè');
+  }
+
+  applyBgTemplate();
+  saveStateToLocalStorage();
+}
+
+// Bật/tắt nhanh ẩn chữ mẫu cũ ngay trên thanh Preview
+function toggleHideDefaultText() {
+  if (!appState.templateOverlays) return;
+  const currentTpl = appState.templateOverlays[appState.docType];
+  if (!currentTpl || !currentTpl.bgUrl) {
+    showToast('Chưa có file phôi mẫu nào được tải lên cho văn bản này.');
+    return;
+  }
+
+  const isCurrentlyHidden = (currentTpl.replaceMode === 'replace_pure' || currentTpl.hideDefaultText === true);
+  if (isCurrentlyHidden) {
+    setTemplateMode('overlay_print');
+  } else {
+    setTemplateMode('replace_pure');
+  }
+}
+
 // Tải lên phôi hóa đơn nền - Hỗ trợ cả file PDF, DOCX (Word) và Ảnh (JPG, PNG, WebP)
 async function handleBgTemplateUpload(event) {
   const file = event.target.files[0];
@@ -529,7 +770,7 @@ async function handleBgTemplateUpload(event) {
 
   // 1. NẾU LÀ FILE PDF
   if (fileName.endsWith('.pdf') || file.type === 'application/pdf') {
-    showToast('Đang đọc và chuyển đổi trang PDF làm phôi...');
+    showToast('Đang đọc và phân tích file PDF làm mẫu mới...');
     try {
       if (window.pdfjsLib) {
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -548,9 +789,17 @@ async function handleBgTemplateUpload(event) {
       }
       document.getElementById('pdf-page-selector').style.display = numPages > 1 ? 'block' : 'none';
 
+      // Render trang 1 với chế độ THAY THẾ (opacity: 1.0, hideDefaultText: true)
       await renderPdfPageToTemplate(1);
-      document.getElementById('bg-options-panel').style.display = 'flex';
-      showToast(`Đã nạp file PDF (${numPages} trang) làm phôi nền thành công!`);
+      
+      // Tự động phân tích văn bản để chuẩn bị trích xuất
+      const extracted = await extractDataFromPdfPage(1);
+      if (extracted && (extracted.partyAName || extracted.partyATax)) {
+        applyExtractedDataToForm(extracted, false);
+        showToast(`✅ Đã thay thế mẫu mới! Tự động nhận diện Bên A: ${extracted.partyAName || 'Mới'}. Không bị chồng chữ.`);
+      } else {
+        showToast(`✅ Đã thay thế mẫu mới (${numPages} trang)! Lớp chữ mẫu cũ đã được ẩn sạch để tránh chồng chữ.`);
+      }
     } catch (err) {
       console.error(err);
       alert('Không thể đọc file PDF này. Vui lòng kiểm tra lại file.');
@@ -568,8 +817,18 @@ async function handleBgTemplateUpload(event) {
         const html = result.value;
         renderDocxToTemplate(html);
         document.getElementById('pdf-page-selector').style.display = 'none';
-        document.getElementById('bg-options-panel').style.display = 'flex';
-        showToast('Đã nạp file Word (.docx) làm phôi mẫu thành công!');
+
+        // Phân tích text từ Word
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        const extracted = parseVietnameseContractData(tempDiv.innerText);
+        if (extracted && (extracted.partyAName || extracted.partyATax)) {
+          window.lastExtractedData = extracted;
+          applyExtractedDataToForm(extracted, false);
+          showToast(`✅ Đã thay thế mẫu mới từ file Word! Nhận diện: ${extracted.partyAName || 'Bên A'}.`);
+        } else {
+          showToast('✅ Đã nạp file Word (.docx) làm mẫu thay thế thành công (đã ẩn chữ cũ)!');
+        }
       } else {
         alert('Trình duyệt đang tải thư viện Word, vui lòng thử lại sau 2 giây.');
       }
@@ -585,7 +844,7 @@ async function handleBgTemplateUpload(event) {
   reader.onload = function(e) {
     setTemplateForCurrentDocType(e.target.result);
     document.getElementById('pdf-page-selector').style.display = 'none';
-    showToast(`Đã tải lên ảnh phôi mẫu cho ${getDocTypeName(appState.docType)}!`);
+    showToast(`✅ Đã tải lên ảnh mẫu mới cho ${getDocTypeName(appState.docType)} (đã bật chế độ thay thế, không bị chồng chữ)!`);
   };
   reader.readAsDataURL(file);
 }
@@ -604,8 +863,12 @@ async function renderPdfPageToTemplate(pageNumber) {
   setTemplateForCurrentDocType(canvas.toDataURL('image/png'));
 }
 
-function changePdfPage(pageNumber) {
-  renderPdfPageToTemplate(pageNumber);
+async function changePdfPage(pageNumber) {
+  await renderPdfPageToTemplate(pageNumber);
+  const extracted = await extractDataFromPdfPage(pageNumber);
+  if (extracted && (extracted.partyAName || extracted.partyATax)) {
+    applyExtractedDataToForm(extracted, false);
+  }
   showToast(`Đã chuyển sang phôi Trang ${pageNumber}`);
 }
 
@@ -672,11 +935,12 @@ function setTemplateForCurrentDocType(dataUrl) {
   if (!appState.templateOverlays) {
     appState.templateOverlays = JSON.parse(JSON.stringify(defaultState.templateOverlays));
   }
-  const prev = appState.templateOverlays[appState.docType] || { opacity: 0.4, printWithBg: false };
   appState.templateOverlays[appState.docType] = {
     bgUrl: dataUrl,
-    opacity: prev.opacity || 0.4,
-    printWithBg: prev.printWithBg || false
+    opacity: 1.0, // 100% rõ nét
+    printWithBg: true,
+    replaceMode: 'replace_pure', // Mặc định bật cơ chế THAY THẾ HOÀN TOÀN
+    hideDefaultText: true // Ẩn sạch chữ mẫu cũ để tránh chồng chữ!
   };
   applyBgTemplate();
   saveStateToLocalStorage();
@@ -757,34 +1021,106 @@ function exportToWordDocx() {
   showToast('Đã tải xuống file Word (.doc) thành công! Mở và chỉnh sửa trực tiếp trên Microsoft Word.');
 }
 
-// Áp dụng ảnh phôi nền vào khung A4 theo đúng mẫu đang được chọn
+// Áp dụng ảnh phôi nền vào khung A4 theo đúng mẫu đang được chọn và cơ chế thay thế
 function applyBgTemplate() {
   const overlay = document.getElementById('template-bg-overlay-1');
+  const a4Page = document.getElementById('a4-page-1');
   if (!appState.templateOverlays) {
     appState.templateOverlays = JSON.parse(JSON.stringify(defaultState.templateOverlays));
   }
-  const currentTpl = appState.templateOverlays[appState.docType] || { bgUrl: '', opacity: 0.4, printWithBg: false };
+  const currentTpl = appState.templateOverlays[appState.docType] || { bgUrl: '', opacity: 1.0, printWithBg: true, replaceMode: 'replace_pure', hideDefaultText: false };
   const panel = document.getElementById('bg-options-panel');
+  const quickBar = document.getElementById('template-quick-bar');
 
   if (currentTpl.bgUrl) {
     overlay.style.backgroundImage = `url("${currentTpl.bgUrl}")`;
-    overlay.style.opacity = currentTpl.opacity;
-    if (panel) panel.style.display = 'flex';
+    if (panel) panel.style.display = 'block';
+    if (quickBar) quickBar.style.display = 'flex';
+
+    // Cập nhật tên mẫu đang gắn phôi trên thanh thao tác nhanh
+    const quickBarTplName = document.getElementById('quick-bar-tpl-name');
+    if (quickBarTplName) {
+      quickBarTplName.textContent = `📄 Đang gắn mẫu: ${getDocTypeName(appState.docType)}`;
+    }
+
+    const isReplacePure = (currentTpl.replaceMode === 'replace_pure' || currentTpl.hideDefaultText === true);
+    const isExtractForm = (currentTpl.replaceMode === 'extract_form');
+    const isOverlayPrint = (currentTpl.replaceMode === 'overlay_print');
+
+    // Cập nhật class trên #a4-page-1
+    if (isReplacePure) {
+      a4Page.classList.add('mode-replace-only');
+      overlay.style.opacity = '1';
+      document.documentElement.style.setProperty('--print-bg-display', 'block');
+    } else {
+      a4Page.classList.remove('mode-replace-only');
+      overlay.style.opacity = isExtractForm ? '0.15' : (currentTpl.opacity || '0.4');
+      if (currentTpl.printWithBg) {
+        document.documentElement.style.setProperty('--print-bg-display', 'block');
+      } else {
+        document.documentElement.style.setProperty('--print-bg-display', 'none');
+      }
+    }
+
+    // Đồng bộ radio buttons trong Card 1
+    const rReplace = document.getElementById('radio-mode-replace');
+    const rExtract = document.getElementById('radio-mode-extract');
+    const rOverlay = document.getElementById('radio-mode-overlay');
+    const cardReplace = document.getElementById('mode-card-replace');
+    const cardExtract = document.getElementById('mode-card-extract');
+    const cardOverlay = document.getElementById('mode-card-overlay');
+
+    if (rReplace) rReplace.checked = isReplacePure;
+    if (rExtract) rExtract.checked = isExtractForm;
+    if (rOverlay) rOverlay.checked = isOverlayPrint;
+
+    if (cardReplace) cardReplace.classList.toggle('active', isReplacePure);
+    if (cardExtract) cardExtract.classList.toggle('active', isExtractForm);
+    if (cardOverlay) cardOverlay.classList.toggle('active', isOverlayPrint);
+
+    // Đồng bộ hộp thanh trượt in đè
+    const slidersBox = document.getElementById('overlay-sliders-box');
+    if (slidersBox) slidersBox.style.display = isOverlayPrint ? 'block' : 'none';
+
     const slider = document.getElementById('bg-opacity-slider');
     const lbl = document.getElementById('lbl-opacity');
     const chk = document.getElementById('chk-print-bg');
-    if (slider) slider.value = Math.round(currentTpl.opacity * 100);
-    if (lbl) lbl.textContent = `${Math.round(currentTpl.opacity * 100)}%`;
+    if (slider) slider.value = Math.round((currentTpl.opacity || 0.4) * 100);
+    if (lbl) lbl.textContent = `${Math.round((currentTpl.opacity || 0.4) * 100)}%`;
     if (chk) chk.checked = !!currentTpl.printWithBg;
 
-    if (currentTpl.printWithBg) {
-      document.documentElement.style.setProperty('--print-bg-display', 'block');
-    } else {
-      document.documentElement.style.setProperty('--print-bg-display', 'none');
+    // Đồng bộ thanh Quick Bar trên Preview
+    const quickModeBadge = document.getElementById('quick-bar-mode-badge');
+    const btnQuickToggle = document.getElementById('btn-quick-toggle-text');
+    if (quickModeBadge) {
+      if (isReplacePure) {
+        quickModeBadge.textContent = 'Chế độ: Thay thế hoàn toàn (Đã ẩn chữ cũ)';
+        quickModeBadge.style.color = '#065f46';
+        quickModeBadge.style.background = '#d1fae5';
+      } else if (isExtractForm) {
+        quickModeBadge.textContent = 'Chế độ: Đã thay dữ liệu vào Form';
+        quickModeBadge.style.color = '#0369a1';
+        quickModeBadge.style.background = '#e0f2fe';
+      } else {
+        quickModeBadge.textContent = 'Chế độ: Phôi nền in đè';
+        quickModeBadge.style.color = '#854d0e';
+        quickModeBadge.style.background = '#fef9c3';
+      }
+    }
+    if (btnQuickToggle) {
+      if (isReplacePure) {
+        btnQuickToggle.classList.add('active');
+        btnQuickToggle.innerHTML = '👁️ Hiện Lại Chữ Mẫu Mặc Định';
+      } else {
+        btnQuickToggle.classList.remove('active');
+        btnQuickToggle.innerHTML = '👁️ Ẩn Chữ Mẫu Cũ (Tránh Chồng Chữ)';
+      }
     }
   } else {
     overlay.style.backgroundImage = 'none';
+    if (a4Page) a4Page.classList.remove('mode-replace-only');
     if (panel) panel.style.display = 'none';
+    if (quickBar) quickBar.style.display = 'none';
   }
   updateTargetTemplateBadge();
 }
@@ -818,14 +1154,25 @@ function togglePrintBackground() {
   }
 }
 
-// Xóa phôi nền của mẫu hiện tại
+// Xóa phôi nền của mẫu hiện tại và khôi phục mẫu chuẩn ban đầu
 function removeBgTemplate() {
   if (!appState.templateOverlays) return;
-  appState.templateOverlays[appState.docType] = { bgUrl: '', opacity: 0.4, printWithBg: false };
+  appState.templateOverlays[appState.docType] = {
+    bgUrl: '',
+    opacity: 1.0,
+    printWithBg: false,
+    replaceMode: 'replace_pure',
+    hideDefaultText: false
+  };
+  loadedPdfDocument = null;
+  window.lastExtractedData = null;
+  const a4Page = document.getElementById('a4-page-1');
+  if (a4Page) a4Page.classList.remove('mode-replace-only');
   applyBgTemplate();
-  document.getElementById('file-bg-template').value = '';
+  const fileInput = document.getElementById('file-bg-template');
+  if (fileInput) fileInput.value = '';
   saveStateToLocalStorage();
-  showToast(`Đã gỡ bỏ phôi nền của ${getDocTypeName(appState.docType)}`);
+  showToast(`Đã khôi phục về mẫu chuẩn ban đầu của ${getDocTypeName(appState.docType)}`);
 }
 
 // Tải lên logo công ty

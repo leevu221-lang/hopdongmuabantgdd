@@ -350,6 +350,25 @@
             </div>
           </div>
 
+          <!-- THANH THAO TÁC NHANH CƠ CHẾ THAY THẾ MẪU (HIỆN KHI ĐÃ TẢI LÊN MẪU) -->
+          <div class="template-quick-bar no-print" id="template-quick-bar" style="display: none;">
+            <div class="quick-bar-left">
+              <span class="badge-active-tpl" id="quick-bar-tpl-name">📄 Đang gắn phôi mẫu mới</span>
+              <span class="badge-status-mode" id="quick-bar-mode-badge">Chế độ: Thay thế hoàn toàn (Đã ẩn chữ cũ)</span>
+            </div>
+            <div class="quick-bar-right">
+              <button type="button" class="btn-quick-action active" id="btn-quick-toggle-text" onclick="toggleHideDefaultText()">
+                👁️ Hiện Lại Chữ Mẫu Mặc Định
+              </button>
+              <button type="button" class="btn-quick-action btn-quick-extract" onclick="triggerAutoExtractFromDoc(event)" title="Tự động đọc thông tin bên A từ file mới và thay thế vào form">
+                ⚡ Đọc Dữ Liệu Thay Vào Form
+              </button>
+              <button type="button" class="btn-quick-action btn-quick-reset" onclick="removeBgTemplate()" title="Gỡ bỏ mẫu mới và quay về mẫu chuẩn ban đầu">
+                🔄 Gỡ Mẫu Mới
+              </button>
+            </div>
+          </div>
+
           <!-- BANNER MẸO IN BẢN ĐẸP KHÔNG DÍNH TIÊU ĐỀ/CHÂN TRANG TRÌNH DUYỆT -->
           <div class="print-guide-banner no-print">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#854d0e" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
@@ -609,7 +628,7 @@
               <h3>1. Tải Lên Phôi Hóa Đơn / Hợp Đồng</h3>
               <span class="badge-mint">Hỗ trợ PDF, DOCX, Ảnh</span>
             </div>
-            <p class="card-hint">Nếu công ty bạn đã có phôi giấy in sẵn dưới dạng <strong>file PDF, file Word (.docx) hoặc hình ảnh</strong>, hãy tải lên đây để hiển thị phôi nền và căn chỉnh chữ in đè chính xác 100%!</p>
+            <p class="card-hint">Tải lên file mẫu mới (<strong>PDF, Word .docx hoặc hình ảnh</strong>). Hệ thống cung cấp <strong>cơ chế thay thế thông minh</strong>: Ẩn sạch chữ mẫu cũ để in mẫu mới không bị chồng chữ, hoặc tự động trích xuất thông tin thay thế vào form!</p>
             
             <!-- THANH THỂ HIỆN RÕ MẪU ĐANG ĐƯỢC GẮN PHÔI -->
             <div class="active-target-badge" style="background:#e8f4f0;border:1px solid #a9d7c9;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
@@ -635,23 +654,86 @@
 
             <div class="bg-options-row" id="bg-options-panel" style="display: none;">
               <!-- CHỌN TRANG PDF NẾU LÀ FILE PDF NHIỀU TRANG -->
-              <div class="pdf-page-selector" id="pdf-page-selector" style="display: none; margin-bottom: 8px;">
-                <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-right:8px;">Chọn trang PDF làm phôi:</label>
+              <div class="pdf-page-selector" id="pdf-page-selector" style="display: none; margin-bottom: 12px;">
+                <label style="font-size:12.5px;font-weight:600;color:var(--text-secondary);margin-right:8px;">Chọn trang PDF làm phôi:</label>
                 <select id="select-pdf-page" onchange="changePdfPage(this.value)" class="chip-select">
                 </select>
               </div>
 
-              <div class="slider-group">
-                <label for="bg-opacity-slider">Độ mờ phôi nền: <strong id="lbl-opacity">40%</strong></label>
-                <input type="range" id="bg-opacity-slider" min="5" max="100" value="40" oninput="changeBgOpacity(this.value)">
+              <!-- CƠ CHẾ THAY THẾ MẪU (3 CHẾ ĐỘ RÕ RÀNG) -->
+              <div class="replacement-mode-section">
+                <div class="mode-section-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2d6e61" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                  <span><strong>Cơ Chế Thay Thế Mẫu (Chọn 1 trong 3 chế độ bên dưới):</strong></span>
+                </div>
+
+                <div class="replacement-mode-cards">
+                  <!-- OPTION 1: THAY THẾ HOÀN TOÀN -->
+                  <label class="mode-card active" id="mode-card-replace">
+                    <input type="radio" name="tpl-replace-mode" id="radio-mode-replace" value="replace_pure" onchange="setTemplateMode('replace_pure')" checked>
+                    <div class="mode-card-body">
+                      <div class="mode-card-header">
+                        <span class="mode-badge-green">Khuyên Dùng</span>
+                        <strong>📄 1. Thay Thế Hoàn Toàn (Chỉ in mẫu mới vừa tải)</strong>
+                      </div>
+                      <p class="mode-card-desc">Ẩn hoàn toàn chữ mẫu cũ để <strong>không bị chồng đè hai lớp chữ</strong>! Mẫu mới hiển thị 100% rõ nét, sẵn sàng in hoặc xem trực tiếp.</p>
+                    </div>
+                  </label>
+
+                  <!-- OPTION 2: TRÍCH XUẤT THAY VÀO FORM -->
+                  <label class="mode-card" id="mode-card-extract">
+                    <input type="radio" name="tpl-replace-mode" id="radio-mode-extract" value="extract_form" onchange="setTemplateMode('extract_form')">
+                    <div class="mode-card-body">
+                      <div class="mode-card-header">
+                        <span class="mode-badge-mint">Tự Động 100%</span>
+                        <strong>⚡ 2. Trích Xuất Dữ Liệu Thay Vào Form</strong>
+                      </div>
+                      <p class="mode-card-desc">Tự động đọc thông tin Bên A (Tên công ty, MST, Địa chỉ, Đại diện...) từ file mới và thay thế toàn bộ dữ liệu mẫu cũ trong form!</p>
+                      <button type="button" class="btn btn-xs btn-outline-mint" onclick="triggerAutoExtractFromDoc(event)" style="margin-top:6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                        Quét & Điền Dữ Liệu Vào Form Ngay
+                      </button>
+                    </div>
+                  </label>
+
+                  <!-- OPTION 3: IN ĐÈ LÊN PHÔI CÓ SẴN -->
+                  <label class="mode-card" id="mode-card-overlay">
+                    <input type="radio" name="tpl-replace-mode" id="radio-mode-overlay" value="overlay_print" onchange="setTemplateMode('overlay_print')">
+                    <div class="mode-card-body">
+                      <div class="mode-card-header">
+                        <strong>🖨️ 3. Phôi Nền In Đè (In lên giấy in sẵn)</strong>
+                      </div>
+                      <p class="mode-card-desc">Hiển thị phôi mờ để căn lề chữ khi đưa giấy có sẵn hoa văn vào máy in văn phòng.</p>
+                    </div>
+                  </label>
+                </div>
               </div>
-              <div class="checkbox-row">
-                <label class="checkbox-label">
-                  <input type="checkbox" id="chk-print-bg" onchange="togglePrintBackground()">
-                  <span>Cho phép in luôn ảnh phôi (Bỏ chọn nếu chỉ in chữ đè lên giấy có sẵn)</span>
-                </label>
+
+              <!-- THANH TRƯỢT ĐỘ MỜ VÀ TÙY CHỌN CHO CHẾ ĐỘ IN ĐÈ -->
+              <div class="overlay-sliders-box" id="overlay-sliders-box" style="display: none; margin-top: 10px; padding: 12px; background: #f9fbfb; border-radius: 8px; border: 1px dashed #cbd5e1; width: 100%;">
+                <div class="slider-group">
+                  <label for="bg-opacity-slider">Độ mờ phôi nền: <strong id="lbl-opacity">40%</strong></label>
+                  <input type="range" id="bg-opacity-slider" min="5" max="100" value="40" oninput="changeBgOpacity(this.value)">
+                </div>
+                <div class="checkbox-row" style="margin-top: 6px;">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="chk-print-bg" onchange="togglePrintBackground()">
+                    <span>Cho phép in luôn ảnh phôi (Bỏ chọn nếu chỉ in chữ đè lên giấy có sẵn)</span>
+                  </label>
+                </div>
               </div>
-              <button class="btn btn-sm btn-danger" onclick="removeBgTemplate()">Xóa Phôi Nền</button>
+
+              <!-- NÚT THAO TÁC -->
+              <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-sm btn-primary" onclick="switchMainTab('editor')">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  Xem Kết Quả Trên Bản In A4
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeBgTemplate()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  Khôi Phục Mẫu Chuẩn (Xóa Mẫu Mới)
+                </button>
+              </div>
             </div>
           </div>
 

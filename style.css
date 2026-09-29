@@ -816,6 +816,22 @@ html, body {
   padding-bottom: 12mm; /* Khoảng đệm an toàn để nội dung không đè lên chân trang */
 }
 
+/* ==================== CƠ CHẾ THAY THẾ HOÀN TOÀN (ẨN CHỮ MẪU CŨ) ==================== */
+.a4-page.mode-replace-only {
+  padding: 0 !important;
+}
+
+.a4-page.mode-replace-only .page-content,
+.a4-page.mode-replace-only .a4-footer {
+  display: none !important;
+}
+
+.a4-page.mode-replace-only .template-bg-overlay {
+  opacity: 1 !important;
+  display: block !important;
+  z-index: 10 !important;
+}
+
 /* Bật sửa trực tiếp khi user kích hoạt */
 .editable-active [contenteditable="true"] {
   outline: 1.5px dashed #3b8c7b !important;
@@ -1568,4 +1584,235 @@ html, body {
   .template-bg-overlay {
     display: var(--print-bg-display, none) !important;
   }
+
+  /* Khi ở chế độ Thay Thế Hoàn Toàn lúc In */
+  .a4-page.mode-replace-only {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .a4-page.mode-replace-only .page-content,
+  .a4-page.mode-replace-only .a4-footer {
+    display: none !important;
+  }
+  .a4-page.mode-replace-only .template-bg-overlay {
+    display: block !important;
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }
+
+/* ==================== STYLES CHO CƠ CHẾ THAY THẾ MẪU ==================== */
+
+/* Thanh thao tác nhanh cơ chế thay thế mẫu trên Preview */
+.template-quick-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f0fdf9;
+  border: 1px solid #99f6e4;
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 10px;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.06);
+}
+
+.quick-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge-active-tpl {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0f766e;
+  background: #ccfbf1;
+  padding: 4px 10px;
+  border-radius: 99px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-status-mode {
+  font-size: 12px;
+  font-weight: 600;
+  color: #134e4a;
+  background: #e6fffa;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #b2f5ea;
+}
+
+.quick-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-quick-action {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-quick-action:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.btn-quick-action.active {
+  background: #0f766e;
+  color: #ffffff;
+  border-color: #0f766e;
+}
+
+.btn-quick-extract {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+
+.btn-quick-extract:hover {
+  background: #bae6fd;
+}
+
+.btn-quick-reset {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.btn-quick-reset:hover {
+  background: #fee2e2;
+}
+
+/* Các thẻ chọn cơ chế thay thế trong Template Manager */
+.replacement-mode-section {
+  margin-top: 14px;
+  padding: 14px;
+  background: #f0fdf9;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+}
+
+.mode-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: #065f46;
+  margin-bottom: 12px;
+}
+
+.replacement-mode-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mode-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-card:hover {
+  border-color: #52ab98;
+  background: #fafdfc;
+}
+
+.mode-card:has(input[type="radio"]:checked) {
+  border-color: #0d9488;
+  background: #f0fdfa;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.12);
+}
+
+.mode-card input[type="radio"] {
+  margin-top: 3px;
+  accent-color: #0d9488;
+  cursor: pointer;
+}
+
+.mode-card-body {
+  flex: 1;
+}
+
+.mode-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 13.5px;
+  color: #1e293b;
+}
+
+.mode-card-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #64748b;
+  margin: 0;
+}
+
+.mode-badge-green {
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+.mode-badge-mint {
+  background: #ccfbf1;
+  color: #0f766e;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+.btn-xs {
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 5px;
+}
+
+.btn-outline-mint {
+  background: #ffffff;
+  color: #0f766e;
+  border: 1px solid #99f6e4;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-outline-mint:hover {
+  background: #ccfbf1;
+  border-color: #5eead4;
+}
+
