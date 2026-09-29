@@ -490,21 +490,209 @@ function selectDocumentType(type) {
   showToast(`Đã chuyển sang: ${pvTitle.textContent}`);
 }
 
-// ==================== QUẢN LÝ PHÔI MẪU NỀN & LOGO (UPLOAD TEMPLATE) ====================
+// ==================== QUẢN LÝ PHÔI MẪU NỀN & LOGO (UPLOAD TEMPLATE: PDF, DOCX, ẢNH) ====================
 
-// Tải lên phôi hóa đơn nền (background overlay)
-function handleBgTemplateUpload(event) {
+let loadedPdfDocument = null;
+
+// Tải lên phôi hóa đơn nền - Hỗ trợ cả file PDF, DOCX (Word) và Ảnh (JPG, PNG, WebP)
+async function handleBgTemplateUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
 
+  const fileName = file.name.toLowerCase();
+
+  // 1. NẾU LÀ FILE PDF
+  if (fileName.endsWith('.pdf') || file.type === 'application/pdf') {
+    showToast('Đang đọc và chuyển đổi trang PDF làm phôi...');
+    try {
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+      const arrayBuffer = await file.arrayBuffer();
+      loadedPdfDocument = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const numPages = loadedPdfDocument.numPages;
+
+      const select = document.getElementById('select-pdf-page');
+      select.innerHTML = '';
+      for (let i = 1; i <= numPages; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Trang ${i} / ${numPages}`;
+        select.appendChild(opt);
+      }
+      document.getElementById('pdf-page-selector').style.display = numPages > 1 ? 'block' : 'none';
+
+      await renderPdfPageToTemplate(1);
+      document.getElementById('bg-options-panel').style.display = 'flex';
+      showToast(`Đã nạp file PDF (${numPages} trang) làm phôi nền thành công!`);
+    } catch (err) {
+      console.error(err);
+      alert('Không thể đọc file PDF này. Vui lòng kiểm tra lại file.');
+    }
+    return;
+  }
+
+  // 2. NẾU LÀ FILE WORD (.docx, .doc)
+  if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
+    showToast('Đang đọc nội dung file Word (.docx)...');
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      if (window.mammoth) {
+        const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+        const html = result.value;
+        renderDocxToTemplate(html);
+        document.getElementById('pdf-page-selector').style.display = 'none';
+        document.getElementById('bg-options-panel').style.display = 'flex';
+        showToast('Đã nạp file Word (.docx) làm phôi mẫu thành công!');
+      } else {
+        alert('Trình duyệt đang tải thư viện Word, vui lòng thử lại sau 2 giây.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Không thể đọc file Word này.');
+    }
+    return;
+  }
+
+  // 3. NẾU LÀ HÌNH ẢNH (JPG, PNG, WebP)
   const reader = new FileReader();
   reader.onload = function(e) {
     appState.bgTemplateUrl = e.target.result;
     applyBgTemplate();
+    document.getElementById('pdf-page-selector').style.display = 'none';
     document.getElementById('bg-options-panel').style.display = 'flex';
-    showToast('Tải lên phôi mẫu hóa đơn thành công!');
+    showToast('Tải lên ảnh phôi mẫu thành công!');
   };
   reader.readAsDataURL(file);
+}
+
+// Chuyển trang PDF thành ảnh độ phân giải cao cho phôi A4
+async function renderPdfPageToTemplate(pageNumber) {
+  if (!loadedPdfDocument) return;
+  const page = await loadedPdfDocument.getPage(parseInt(pageNumber));
+  // Render với scale 2.0 để ảnh sắc nét độ phân giải cao
+  const viewport = page.getViewport({ scale: 2.0 });
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  const ctx = canvas.getContext('2d');
+  await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+  appState.bgTemplateUrl = canvas.toDataURL('image/png');
+  applyBgTemplate();
+}
+
+function changePdfPage(pageNumber) {
+  renderPdfPageToTemplate(pageNumber);
+  showToast(`Đã chuyển sang phôi Trang ${pageNumber}`);
+}
+
+// Chuyển đổi nội dung Word DOCX sang phôi mẫu
+function renderDocxToTemplate(html) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1200;
+  canvas.height = 1700;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Vẽ khung viền phôi mẫu Word
+  ctx.strokeStyle = '#3b8c7b';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+
+  ctx.fillStyle = '#19322c';
+  ctx.font = 'bold 26px "Times New Roman", serif';
+  ctx.fillText('PHÔI MẪU TẢI TỪ FILE WORD (.DOCX)', 60, 90);
+
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  const textLines = tempDiv.innerText.split('\n').filter(l => l.trim().length > 0);
+
+  ctx.font = '18px "Times New Roman", serif';
+  ctx.fillStyle = '#555555';
+  let y = 140;
+  for (let i = 0; i < Math.min(textLines.length, 36); i++) {
+    ctx.fillText(textLines[i].substring(0, 85), 60, y);
+    y += 34;
+  }
+
+  appState.bgTemplateUrl = canvas.toDataURL('image/png');
+  applyBgTemplate();
+}
+
+// ==================== XUẤT FILE WORD (.DOC / .DOCX) ====================
+function exportToWordDocx() {
+  const pageElement = document.getElementById('a4-page-1');
+  const clone = pageElement.cloneNode(true);
+
+  // Bỏ overlay phôi nền nếu có
+  const overlay = clone.querySelector('.template-bg-overlay');
+  if (overlay) overlay.remove();
+
+  const contentHtml = clone.innerHTML;
+
+  const wordDocument = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office'
+          xmlns:w='urn:schemas-microsoft-com:office:word'
+          xmlns='http://www.w3.org/TR/REC-html40'>
+    <head>
+      <meta charset='utf-8'>
+      <title>${appState.docType || 'HopDong'}</title>
+      <style>
+        @page Section1 {
+          size: 595.3pt 841.9pt; /* Kích thước A4 trong Word */
+          margin: 40pt 42pt 40pt 56pt;
+          mso-header-margin: 35.4pt;
+          mso-footer-margin: 35.4pt;
+        }
+        div.Section1 { page: Section1; }
+        body {
+          font-family: 'Times New Roman', serif;
+          font-size: 12pt;
+          line-height: 1.3;
+          color: #000;
+        }
+        table {
+          border-collapse: collapse;
+          width: 100%;
+        }
+        th, td {
+          border: 1px solid black;
+          padding: 4pt 6pt;
+          font-size: 11pt;
+        }
+        .party-table, .party-table td {
+          border: none !important;
+          padding: 2pt 0;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .bold { font-weight: bold; }
+        .italic { font-style: italic; }
+        .doc-main-title { font-size: 15pt; font-weight: bold; text-align: center; }
+        .national-name, .national-motto { text-align: center; font-weight: bold; }
+        .signatures-block { width: 100%; margin-top: 20pt; }
+        .underline-bold-red { color: #c90000; font-weight: bold; text-decoration: underline; }
+        .a4-footer { border-top: 1px solid black; margin-top: 24pt; padding-top: 4pt; }
+      </style>
+    </head>
+    <body>
+      <div class="Section1">
+        ${contentHtml}
+      </div>
+    </body>
+    </html>
+  `;
+
+  const blob = new Blob(['\ufeff', wordDocument], { type: 'application/msword;charset=utf-8' });
+  const downloadLink = document.createElement('a');
+  downloadLink.href = URL.createObjectURL(blob);
+  const safeName = (appState.docNumber || 'van_ban').replace(/[^a-zA-Z0-9_-]/g, '_');
+  downloadLink.download = `${safeName}.doc`;
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+  showToast('Đã tải xuống file Word (.doc) thành công! Mở và chỉnh sửa trực tiếp trên Microsoft Word.');
 }
 
 // Áp dụng ảnh phôi nền vào khung A4
